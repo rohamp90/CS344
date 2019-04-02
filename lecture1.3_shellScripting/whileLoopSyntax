@@ -1,0 +1,8 @@
+#!/bin/bash
+i=0
+while test $i -ne 2 #test can also be written as square brackets: while [ $i -ne 2 ]
+do 
+	printf "i = $i, not stopping yet\n"
+	i=$(expr $i + 1)
+done 
+printf "Stopping, i = $i\n"

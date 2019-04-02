@@ -1,0 +1,6 @@
+#!/bin/bash
+for i in a b c d
+do
+	printf "<%s>" $i
+done
+printf "\n"

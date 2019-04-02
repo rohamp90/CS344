@@ -1,0 +1,8 @@
+#!/bin/bash
+TMP="myCoolFilename$$"
+trap "rm -f $TMP; echo 'CTRL+C received, exiting'; exit 1" INT HUP TERM
+echo "lotsa text" > $TMP
+while [ 1 -ne 2 ]
+do 
+	echo "Never ending loop - hit CTRL+C to exit!"
+done

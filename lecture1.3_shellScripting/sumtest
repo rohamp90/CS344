@@ -1,0 +1,4 @@
+#!/bin/bash
+num1=9
+num2=3 + $num1
+echo "num2: $num2"
