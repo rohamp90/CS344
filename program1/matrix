@@ -1,27 +1,23 @@
 #!/bin/bash
 
-# function matrix () {
-    # NAME
-    # matrix - do matrix stuff
-    # SYNOPSIS
-    #   matrix 
+    # NAME Tuan Tran
+    # Program 1: Matrix
 
-    # dims ()
-    # {
-    #     echo this is the dims
-    # }
-
-    # if [$1 = "dims"]
-    # then 
-    #     dims()
-    # fi
-# }
-
+    # DIMS function 
+    #     matrix dims [MATRIX]
+    #       Prints error message to stderr, nothing to stdout and return value != 0 if:
+    #       Argument count is greater than 1 (e.g. `matrix dims m1 m2`).
+    #       Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+    #       Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
       dims ()
     {
         echo this is the dims
+
+        if [ $2 -eq 1 ]
+        then
+            echo you sent me a 1
+        fi
     }
-    # dims
 
     if [ "$1" == "dims" ]
     then 
