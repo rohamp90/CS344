@@ -1,5 +1,29 @@
 #!/bin/bash
 
-FILE1=$1
+# function matrix () {
+    # NAME
+    # matrix - do matrix stuff
+    # SYNOPSIS
+    #   matrix 
 
-wc -l $FILE1
+    # dims ()
+    # {
+    #     echo this is the dims
+    # }
+
+    # if [$1 = "dims"]
+    # then 
+    #     dims()
+    # fi
+# }
+
+      dims ()
+    {
+        echo this is the dims
+    }
+    # dims
+
+    if [ "$1" == "dims" ]
+    then 
+        dims
+    fi
