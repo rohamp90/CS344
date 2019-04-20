@@ -11,19 +11,34 @@
     #       Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
     function dims ()
     {
-        echo this is the dims               #test print
-        echo number of parameters $varNumArguments        #test print number of parameters
-        echo name of file: $varFileName             #test print
+        # echo this is the dims                               #test print
+        # echo number of parameters $varNumArguments          #test print number of parameters
+        # echo name of file: $varFileName                     #test print
+
+        varRows=0           #keep count of rows
+        varCols=0           #keep count of colums
 
         #if there is more than 1 argument the print out error message to stderr
         # Argument count is greater than 1 (e.g. `matrix dims m1 m2`)
-        if [ $varNumArguments -gt 2 ] 
+        if [ $varNumArguments -gt 2 ] || [ $varNumArguments -eq 1 ]
         then 
             echo "invalid number of arguments" >&2
-
+            exit 1
         elif [ ! -r $varFileName ]
         then
-            echo file not readable
+            # Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+            echo $varFileName file not readable >&2
+            exit 1
+        else
+            # Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
+            varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
+                                                        #to count the lines and assign to varRows
+
+            varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
+                                                        #which should give you the amount of columns
+
+            echo $varRows $varCols
+            exit 0
         fi    
 
     }
