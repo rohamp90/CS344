@@ -3,6 +3,7 @@
     # NAME Tuan Tran
     # Program 1: Matrix
 
+#########################################################################################################
     # DIMS function 
     #     matrix dims [MATRIX]
     #       Prints error message to stderr, nothing to stdout and return value != 0 if:
@@ -33,25 +34,70 @@
             # Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
             varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
                                                         #to count the lines and assign to varRows
-
             varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
                                                         #which should give you the amount of columns
-
             echo $varRows $varCols
             exit 0
         fi    
-
     }
+#########################################################################################################
 
+#########################################################################################################
+# Transpose Function
+# matrix transpose [MATRIX]
+# Prints error message to stderr, nothing to stdout and return value != 0 if:
+# Argument count is greater than 1 (e.g. `matrix transpose m1 m2`).
+# Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix transpose no_such_file`).
+# Otherwise, prints the transpose of the input, in a valid matrix format to stdout, nothing to stderr, and returns 0.
+    function transpose() 
+    {
+
+        varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
+                                                        #to count the lines and assign to varRows
+        varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
+                                                        #which should give you the amount of columns
+
+        # echo number of parameters $varNumArguments          #test print number of parameters
+        # echo name of file: $varFileName                     #test print
+
+        #if there is more than 1 argument the print out error message to stderr
+        # Argument count is greater than 1 (e.g. `matrix dims m1 m2`)
+        if [ $varNumArguments -gt 2 ] || [ $varNumArguments -lt 1 ]
+        then 
+            echo "invalid number of arguments" >&2
+            exit 1
+        elif [ ! -r $varFileName ]
+        then
+            # Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+            echo $varFileName file not readable >&2
+            exit 1
+        else
+        # Otherwise, prints the transpose of the input, in a valid matrix format to stdout, nothing to stderr, and returns 0.
+            # echo NOW FOR THE TRANSPOSE                #test print
+            
+            varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
+                                                        #to count the lines and assign to varRows
+            varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
+                                                        #which should give you the amount of columns
+            for (( i=1; i<=$varCols; i++ ))             #For loop to transpose the matrix
+            do   
+                cut -f$i $varFileName | paste -s        #using cut followed by the field number (i is reprenting the field) then using paste to transpose
+            done
+        fi
+    }
+#########################################################################################################
+#########################################################################################################
+# Variables
     varNumArguments=$#          #variable to save the number of arguments
     varFileName=$2
-    
-    # cat /dev/stdin                #test cat of stdin
+#########################################################################################################
+# Main Logic
 
-    if [ "$1" == "dims" ]
+    if [ "$1" == "dims" ]           #If the first argument is dims then this logic will run
     then
-        #test if stdin is empty
-        if [ -p /dev/stdin ]        #true if stdin exists and is named pipe
+        #Nested IF Statement
+        #if no argument is given but input is piped in
+        if [ -p /dev/stdin ]        #condition is true if stdin exists and is named pipe
         then 
 
             # send any piped input to a temp file
@@ -62,12 +108,12 @@
             rm tempPipedInputFile           #making sure to remove the tempPipedInputFile
             exit 0
         else
-            dims
+            dims        #If a file is given to dims then this will run see dims function above
         fi
         
-    elif [ "$1" == "transpose" ]
+    elif [ "$1" == "transpose" ]        #If transpose is the first argument
     then 
-        echo this is transpose
+        transpose
     fi
 
 
