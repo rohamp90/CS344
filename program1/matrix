@@ -115,18 +115,30 @@
         # and returns 0. All values must round to the nearest integer, with ***.5 values rounded away from zero.
             
             sum=0                                       #sum counter
+            mean=0                                      #mean variable
+
             varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
                                                         #to count the lines and assign to varRows
             varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
                                                         #which should give you the amount of columns
             
-            for (( i=1; i<=$varRows; i++ ))             #for loop that runs based on the amount of rows matrix has
+            for (( i=1; i<=$varCols; i++ ))             #for loop that runs based on the amount of columns matrix has
             do
                 # echo i: $i                              #test print
-                num=$(cat $varFileName | cut -f$i | paste -s -d '')
-                # echo num: $num 
-                sum=$((sum + num))
-                printf "%d " $sum
+                num=$(cat $varFileName | cut -f$i | paste -s)
+
+                for element in $num
+                do
+                    sum=$(( sum + element ))
+                done
+                # mean=$(( (sum + (varRows/2)*( (sum>0)*2-1))/ varRows ))
+                let mean="(sum + (varRows/2)*( (sum>0)*2-1))/ varRows"
+                
+                # printf "sum: %d\n" $sum                 #test print
+                # printf "mean: %d\n" $mean              #test print
+                printf "%d " $mean
+                sum=0
+                mean=0
             done
                 printf "\n"
             exit 0
