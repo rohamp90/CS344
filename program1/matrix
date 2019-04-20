@@ -131,11 +131,11 @@
                 do
                     sum=$(( sum + element ))
                 done
-                # mean=$(( (sum + (varRows/2)*( (sum>0)*2-1))/ varRows ))
-                let mean="(sum + (varRows/2)*( (sum>0)*2-1))/ varRows"
+                mean=$(( (sum + (varRows/2)*( (sum>0)*2-1))/ varRows ))
                 
                 # printf "sum: %d\n" $sum                 #test print
-                # printf "mean: %d\n" $mean              #test print
+                # printf "num of rows:%d\n" $varRows      #test print
+                # printf "mean: %d\n\n" $mean              #test print
                 printf "%d " $mean
                 sum=0
                 mean=0
@@ -147,9 +147,38 @@
 #########################################################################################################
 
 #########################################################################################################
+# Adding Function
+# Prints error message to stderr, nothing to stdout and return value != 0 if:
+# Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
+# Argument count is 2 but the file named by either argument is not readable (e.g. `matrix add m1 no_such_file`).
+# The dimensions of the input matrices do not allow them to be added together following the rules of matrix addition.
+# Otherwise, prints the sum of both matricies, in a valid matrix format to stdout, nothing to stderr, and returns 0.
+
+    function add () 
+    {
+        #Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
+    
+        if [ $varNumArguments -eq 2 ]
+        then 
+            echo "invalid number of arguments" >&2
+            exit 1
+        elif [ ! -r $varFileName ]
+        then
+            # Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+            echo $varFileName file not readable >&2
+            exit 1
+        else 
+            echo everything is working
+        fi
+    }
+#########################################################################################################
+
+#########################################################################################################
 # Variables
     varNumArguments=$#          #variable to save the number of arguments
     varFileName=$2
+#########################################################################################################
+
 #########################################################################################################
 # Main Logic
 
@@ -177,6 +206,9 @@
     elif [ "$1" == "mean" ]        #If mean is the first argument
     then 
         mean
+    elif [ "$1" == "add" ] 
+    then
+        add
     fi
 
     exit 0
