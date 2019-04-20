@@ -20,7 +20,7 @@
 
         #if there is more than 1 argument the print out error message to stderr
         # Argument count is greater than 1 (e.g. `matrix dims m1 m2`)
-        if [ $varNumArguments -gt 2 ] || [ $varNumArguments -eq 1 ]
+        if [ $varNumArguments -gt 2 ] || [ $varNumArguments -lt 1 ]
         then 
             echo "invalid number of arguments" >&2
             exit 1
@@ -45,12 +45,26 @@
 
     varNumArguments=$#          #variable to save the number of arguments
     varFileName=$2
+    
+    # cat /dev/stdin                #test cat of stdin
 
     if [ "$1" == "dims" ]
     then
-        
-        dims
+        #test if stdin is empty
+        if [ -p /dev/stdin ]        #true if stdin exists and is named pipe
+        then 
 
+            # send any piped input to a temp file
+            cat /dev/stdin > tempPipedInputFile   #send piped input into a file called tempPipedInputFile
+            # cat tempPipedInputFile          #test print
+
+            echo $(cat tempPipedInputFile | wc -l) $(head -1 tempPipedInputFile | wc -w)    #count the rows and columns in tempPipedInputFile
+            rm tempPipedInputFile           #making sure to remove the tempPipedInputFile
+            exit 0
+        else
+            dims
+        fi
+        
     elif [ "$1" == "transpose" ]
     then 
         echo this is transpose
