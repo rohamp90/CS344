@@ -83,9 +83,57 @@
             do   
                 cut -f$i $varFileName | paste -s        #using cut followed by the field number (i is reprenting the field) then using paste to transpose
             done
+            exit 0
         fi
     }
 #########################################################################################################
+
+#########################################################################################################
+# Mean Function
+# matrix mean [MATRIX]
+# Prints error message to stderr, nothing to stdout and return value != 0 if:
+# Argument count is greater than 1 (e.g. `matrix mean m1 m2`).
+# Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix mean no_such_file`).
+# Otherwise, prints a row vector mean of the input matrix, in a valid matrix format to stdout, nothing to stderr, 
+# and returns 0. All values must round to the nearest integer, with ***.5 values rounded away from zero.
+
+    function mean ()
+    {
+        #if there is more than 1 argument the print out error message to stderr
+        # Argument count is greater than 1 (e.g. `matrix dims m1 m2`)
+        if [ $varNumArguments -gt 2 ] || [ $varNumArguments -lt 1 ]
+        then 
+            echo "invalid number of arguments" >&2
+            exit 1
+        elif [ ! -r $varFileName ]
+        then
+            # Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
+            echo $varFileName file not readable >&2
+            exit 1
+        else
+        # Otherwise, prints a row vector mean of the input matrix, in a valid matrix format to stdout, nothing to stderr, 
+        # and returns 0. All values must round to the nearest integer, with ***.5 values rounded away from zero.
+            
+            sum=0                                       #sum counter
+            varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
+                                                        #to count the lines and assign to varRows
+            varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
+                                                        #which should give you the amount of columns
+            
+            for (( i=1; i<=$varRows; i++ ))             #for loop that runs based on the amount of rows matrix has
+            do
+                # echo i: $i                              #test print
+                num=$(cat $varFileName | cut -f$i | paste -s -d '')
+                # echo num: $num 
+                sum=$((sum + num))
+                printf "%d " $sum
+            done
+                printf "\n"
+            exit 0
+        fi
+    }
+#########################################################################################################
+
 #########################################################################################################
 # Variables
     varNumArguments=$#          #variable to save the number of arguments
@@ -114,8 +162,12 @@
     elif [ "$1" == "transpose" ]        #If transpose is the first argument
     then 
         transpose
+    elif [ "$1" == "mean" ]        #If mean is the first argument
+    then 
+        mean
     fi
 
+    exit 0
 
 ##############################################################################################
 # if [ "$1" == "dims" ]
