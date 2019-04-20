@@ -9,17 +9,56 @@
     #       Argument count is greater than 1 (e.g. `matrix dims m1 m2`).
     #       Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
     #       Otherwise, prints "ROWS COLS" (Space separated!) to stdout, nothing to stderr, and returns 0.
-      dims ()
+    function dims ()
     {
-        echo this is the dims
+        echo this is the dims               #test print
+        echo number of parameters $varNumArguments        #test print number of parameters
+        echo name of file: $varFileName             #test print
 
-        if [ $2 -eq 1 ]
+        #if there is more than 1 argument the print out error message to stderr
+        # Argument count is greater than 1 (e.g. `matrix dims m1 m2`)
+        if [ $varNumArguments -gt 2 ] 
+        then 
+            echo "invalid number of arguments" >&2
+
+        elif [ ! -r $varFileName ]
         then
-            echo you sent me a 1
-        fi
+            echo file not readable
+        fi    
+
     }
 
+    varNumArguments=$#          #variable to save the number of arguments
+    varFileName=$2
+
     if [ "$1" == "dims" ]
-    then 
+    then
+        
         dims
+
+    elif [ "$1" == "transpose" ]
+    then 
+        echo this is transpose
     fi
+
+
+##############################################################################################
+# if [ "$1" == "dims" ]
+#     then
+#         echo this is the dims               #test print
+#         echo number of parameters $#        #test print number of parameters
+
+#         #if there is more than 1 argument the print out error message to stderr
+#         # Argument count is greater than 1 (e.g. `matrix dims m1 m2`)
+#         if [ $# -gt 2 ] 
+#         then 
+#             echo "invalid number of arguments" >&2
+#         fi    
+
+        
+
+#     elif [ "$1" == "transpose" ]
+#     then 
+#         echo this is transpose
+#     fi
+
