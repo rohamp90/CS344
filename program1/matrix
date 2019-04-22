@@ -231,7 +231,7 @@
                 exit 1
 
             else
-                sum=0
+                sum=0                                               #set sum = 0
                 matrixSize=$(( $file1Rows * $file1Cols ))           #calculate matrix size
                 # echo matrixSize: $matrixSize                      #test print
                 while read row1 <&3 && read row2 <&4;
@@ -242,39 +242,97 @@
                     echo $row2 | tr "\n" "\t" | tr "\t" " " >> tempfile2          #send row contents of second file into a temp file
                     
                 done 3<"$varFileName" 4<"$varSecondFileName"
+
+                
+                # cat tempfile1                                     #test print
+                # cat tempfile2                                     #test print
                     echo >> tempfile1                               #add a newline to tempfile
                     echo >> tempfile2                               #add a newline to tempfile
                     cat "tempfile2" >> "tempfile1"                  #cat contents of tempfile2 into tempfile1
-                
-                   for (( i=1; i<=$matrixSize; i++))
+                    # cat tempfile1
+
+
+                #########################################################################
+                for (( i=1; i<=$file1Cols * $file1Rows; i++ ))             #for loop that runs based on the amount of columns matrix has
+                do
+                    # echo i: $i                              #test print
+                # num=$(cat $varFileName | cut -f$i | paste -s)
+
+                # cat tempmeanfile | cut -d ' ' -f$i > tempfile1
+                # cut -d ' ' -f$i tempmeanfile | tr '\t' ' ' | tr '\n' ' '> tempfile1
+                cut -d ' ' -f$i tempfile1 | paste -s | tr '\t' ' ' > tempfile3
+
+                # cut -f$i tempfile1 
+                # cat tempfile3                               #test print
+
+                    for (( j=1; j<=$file1Rows; j++ ))
                     do
-                        cut -d ' ' -f$i tempfile1 | paste -s  | tr '\t' ' '> tempfile3
-                        
-                        # cat tempfile3   #test print
-                        rowstempfile3="$(cat tempfile3 | wc -l)" 
-
-                            for (( k=1; k<=$file1Cols; k++))
-                            do
-                                for (( j=2; j<=$file1Cols; j++))
-                                   
-                                do
-                                    num1=$(cut -d ' ' -f$k tempfile3)
-                                    sum=$(($sum + $num1))
-                                    # echo k: $k            #test print
-                                done
-                            done
-                           echo $sum | tr "\n" " " >> tempfile4
-                           sum=0
-
-                           if [ $(($i % $file1Cols)) -eq 0 ]
-                           then
-                                echo >> tempfile4
-                           fi
+                        # echo j: $j      #test print
+                        num=$(cut -d ' ' -f$j tempfile3)
+                        # echo num: $num              #test print
+                        sum=$(( $sum + $num ))
                     done
-                    cat tempfile4
-                # cat tempfile1
-                # cat tempfile3   #test print
-                rm tempfile1 tempfile2 tempfile3 tempfile4                             #remove temp files
+                # num=$(cat tempmeanfile | cut -d ' ' -f$i | paste -s)       #testing using temp file instead of varFilename
+
+                # echo num: $num                        #test print
+                # for element in $num
+                # do
+                #     sum=$(( sum + element ))
+                # done
+                # mean=$(( (sum + (varRows /2)*( (sum>0)*2-1))/ varRows ))        #equation from homework instructions
+               
+
+
+                # printf "sum: %d\n" $sum                 #test print
+                # printf "num of rows:%d\n" $varRows      #test print
+                # printf "mean: %d\n\n" $mean              #test print
+                # printf "%d " $mean
+                
+                # echo $sum | tr '\n' '\t' >> tempfile4
+                
+                # mean=0
+
+                    if [ $(($i % $file1Cols)) -eq 0 ]             #put a newline in where the columns are done
+                    then
+                        echo $sum >> tempfile4
+                    else 
+                        echo $sum | tr '\n' '\t' >> tempfile4       #else put a tab
+                    fi
+                    sum=0
+                done
+
+                ##########################################################################
+
+                #    for (( i=1; i<=$matrixSize; i++))
+                #     do
+                #         cut -d ' ' -f$i tempfile1 | paste -s  | tr '\t' ' '> tempfile3
+                        
+                #         # cat tempfile3   #test print
+                #         rowstempfile3="$(cat tempfile3 | wc -l)" 
+
+                #             for (( k=1; k<=$file1Cols; k++))
+                #             do
+                #                 for (( j=2; j<=$file1Cols; j++))
+                                   
+                #                 do
+                #                     num1=$(cut -d ' ' -f$k tempfile3)
+                #                     sum=$(($sum + $num1))
+                #                     # echo k: $k            #test print
+                #                 done
+                #             done
+                #            echo $sum | tr "\n" " " >> tempfile4
+                #            sum=0
+
+                #            if [ $(($i % $file1Cols)) -eq 0 ]
+                #            then
+                #                 echo >> tempfile4
+                #            fi
+                #     done
+                #     cat tempfile4
+                # # cat tempfile1
+                # # cat tempfile3   #test print
+                cat tempfile4
+                rm tempfile1 tempfile2  tempfile3 tempfile4                           #remove temp files
 
                 exit 0
             fi
