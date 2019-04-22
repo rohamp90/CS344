@@ -178,7 +178,8 @@
             done
                 # printf "\n"
                 cat tempfile2 | tr 'n' ' ' |paste -s | tr '\t' ' ' > tempfile3
-            rm tempmeanfile tempfile1 tempfile2
+                cat tempfile3
+            rm tempmeanfile tempfile1 tempfile2 tempfile3
             exit 0
         fi
     }
