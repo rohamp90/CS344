@@ -198,7 +198,7 @@
 
             if [ $file1Rows -ne $file2Rows ] || [ $file1Cols -ne $file2Cols ]           #check if matrix is same dimensions
             then
-                # echo matrix is not same dimensions
+                echo matrix is not same dimensions>&2
                 exit 1
 
             else
@@ -254,6 +254,61 @@
 #########################################################################################################
 
 #########################################################################################################
+# Multiply Function
+# matrix multiply MATRIX_LEFT MATRIX_RIGHT
+# Prints error message to stderr, nothing to stdout and return value != 0 if:
+# Argument count does not equal 2 (e.g. `matrix multiply m1 m2 m3` or `matrix multiply m1`).
+# Argument count is 2 but the file named by either argument is not readable (e.g. `matrix multiply m1 no_such_file`).
+# The dimensions of the input matrices do not allow them to be multiplied together following the rules of matrix multiplication.
+# Otherwise, prints the product of both matricies, with the first argument as the left matrix and the second argumentas the right matrix, 
+# in a valid matrix format to stdout, nothing to stderr, and returns 0. (`matrix multiply A B` should return A*B, not B*A)
+
+function multiply() 
+{
+        #Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
+    
+        if [ $varNumArguments -ne 3 ]
+        then 
+            echo "invalid number of arguments" >&2
+            exit 1
+        elif [ ! -r $varFileName ] && [ ! -r $varSecondFileName ]
+        then
+            # Argument count is 2 but the file named by argument 2 is not readable (e.g. `matrix dims no_such_file`).
+            echo files not readable >&2
+            exit 1
+        else 
+             # The dimensions of the input matrices do not allow them to be added together following the rules of matrix addition.
+            # Otherwise, prints the sum of both matricies, in a valid matrix format to stdout, nothing to stderr, and returns 0.
+            # echo everything is working                        #test print
+            # echo $varFileName                                 #test print
+            # echo $varSecondFileName                           #test print
+            # echo number of arguments: $varNumArguments        #test print
+
+            file1Rows="$(cat $varFileName | wc -l)" 
+            file2Rows="$(cat $varSecondFileName | wc -l)" 
+            file1Cols="$(head -n 1 $varFileName | wc -w)"
+            file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
+
+            # echo file1Rows: $file1Rows
+            # echo file2Rows: $file2Rows
+            # echo file1Cols: $file1Cols
+            # echo file2Cols: $file2Cols
+
+            if [ $file1Rows -ne $file2Rows ] || [ $file1Cols -ne $file2Cols ]           #check if matrix is same dimensions
+            then
+                echo matrix is not same dimensions>&2
+                exit 1
+
+            else
+                echo things working so far
+            fi
+        fi
+}
+
+#########################################################################################################
+
+
+#########################################################################################################
 # Variables
     varNumArguments=$#          #variable to save the number of arguments
     varFileName=$2 
@@ -291,6 +346,10 @@
     elif [ "$1" == "add" ] 
     then
         add
+
+    elif [ "$1" == "multiply" ]
+    then
+        multiply
     fi
 
     exit 0
