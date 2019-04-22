@@ -191,9 +191,14 @@
             file1Cols="$(head -n 1 $varFileName | wc -w)"
             file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
 
-            if [ $file1Rows -ne $file2Rows ] && [ $file1Cols -ne $file2Cols ]           #check if matrix is same dimensions
+            # echo file1Rows: $file1Rows
+            # echo file2Rows: $file2Rows
+            # echo file1Cols: $file1Cols
+            # echo file2Cols: $file2Cols
+
+            if [ $file1Rows -ne $file2Rows ] || [ $file1Cols -ne $file2Cols ]           #check if matrix is same dimensions
             then
-                echo matrix is not same dimensions
+                # echo matrix is not same dimensions
                 exit 1
 
             else
@@ -217,18 +222,21 @@
                         cut -d ' ' -f$i tempfile1 | paste -s  | tr '\t' ' '> tempfile3
                         
                         # cat tempfile3   #test print
-                        
+                        rowstempfile3="$(cat tempfile3 | wc -l)" 
 
-                            for (( k=1; k<=$file1Rows; k++))
+                            for (( k=1; k<=$file1Cols; k++))
                             do
-                                num1=$(cut -d ' ' -f$k tempfile3)
-                                sum=$(($sum + $num1))
-                                
+                                for (( j=2; j<=$file1Cols; j++))
+                                   
+                                do
+                                    num1=$(cut -d ' ' -f$k tempfile3)
+                                    sum=$(($sum + $num1))
+                                    # echo k: $k            #test print
+                                done
                             done
                            echo $sum | tr "\n" " " >> tempfile4
                            sum=0
-                        #    echo i % column: $(($i % $file1Cols))
-                        #    echo matrixSize/columns: $(($matrixSize / $file1Cols))
+
                            if [ $(($i % $file1Cols)) -eq 0 ]
                            then
                                 echo >> tempfile4
@@ -239,16 +247,7 @@
                 # cat tempfile3   #test print
                 rm tempfile1 tempfile2 tempfile3 tempfile4                             #remove temp files
 
-                # sum=0
-
-                # for (( i=0; i<=$file1Rows; i++ ))
-                # do
-                #     for (( j=0; j<=$file1Cols; j++ ))
-                #     do
-                #         sum=$(( $row1 + $row2 ))
-                #         echo sum: "$sum"
-                #     done
-                # done
+                exit 0
             fi
         fi
     }
