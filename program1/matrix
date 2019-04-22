@@ -117,9 +117,18 @@
             sum=0                                       #sum counter
             mean=0                                      #mean variable
 
+##############################################
+            #test add newline to file
+            # tempMean="tempmeanfile"
+            # cat $varFileName > "$tempMean"
+            # echo >> $varFileName
+            # tempVarRows="$(cat $tempMean | wc -l)"
+            # rm $tempMean
+####################################################
+
             varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
                                                         #to count the lines and assign to varRows
-            varCols="$(head -1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
+            varCols="$(head -n 1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
                                                         #which should give you the amount of columns
             
             for (( i=1; i<=$varCols; i++ ))             #for loop that runs based on the amount of columns matrix has
@@ -131,8 +140,10 @@
                 do
                     sum=$(( sum + element ))
                 done
-                mean=$(( (sum + (varRows/2)*( (sum>0)*2-1))/ varRows ))
-                
+                mean=$(( (sum + (varRows /2)*( (sum>0)*2-1))/ varRows ))        #equation from homework instructions
+               
+
+
                 # printf "sum: %d\n" $sum                 #test print
                 # printf "num of rows:%d\n" $varRows      #test print
                 # printf "mean: %d\n\n" $mean              #test print
@@ -158,17 +169,87 @@
     {
         #Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
     
-        if [ $varNumArguments -eq 2 ]
+        if [ $varNumArguments -ne 3 ]
         then 
             echo "invalid number of arguments" >&2
             exit 1
-        elif [ ! -r $varFileName ]
+        elif [ ! -r $varFileName ] && [ ! -r $varSecondFileName ]
         then
-            # Argument count is 1 but the file named by argument 1 is not readable (e.g. `matrix dims no_such_file`).
-            echo $varFileName file not readable >&2
+            # Argument count is 2 but the file named by argument 2 is not readable (e.g. `matrix dims no_such_file`).
+            echo files not readable >&2
             exit 1
         else 
-            echo everything is working
+        # The dimensions of the input matrices do not allow them to be added together following the rules of matrix addition.
+        # Otherwise, prints the sum of both matricies, in a valid matrix format to stdout, nothing to stderr, and returns 0.
+            # echo everything is working                        #test print
+            # echo $varFileName                                 #test print
+            # echo $varSecondFileName                           #test print
+            # echo number of arguments: $varNumArguments        #test print
+
+            file1Rows="$(cat $varFileName | wc -l)" 
+            file2Rows="$(cat $varSecondFileName | wc -l)" 
+            file1Cols="$(head -n 1 $varFileName | wc -w)"
+            file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
+
+            if [ $file1Rows -ne $file2Rows ] && [ $file1Cols -ne $file2Cols ]           #check if matrix is same dimensions
+            then
+                echo matrix is not same dimensions
+                exit 1
+
+            else
+                sum=0
+                matrixSize=$(( $file1Rows * $file1Cols ))           #calculate matrix size
+                # echo matrixSize: $matrixSize                      #test print
+                while read row1 <&3 && read row2 <&4;
+                do
+
+                    echo $row1 | tr "\n" "\t" | tr "\t" " " >> tempfile1          #send row contents of first file into a temp file
+                    
+                    echo $row2 | tr "\n" "\t" | tr "\t" " " >> tempfile2          #send row contents of second file into a temp file
+                    
+                done 3<"$varFileName" 4<"$varSecondFileName"
+                    echo >> tempfile1                               #add a newline to tempfile
+                    echo >> tempfile2                               #add a newline to tempfile
+                    cat "tempfile2" >> "tempfile1"                  #cat contents of tempfile2 into tempfile1
+                
+                   for (( i=1; i<=$matrixSize; i++))
+                    do
+                        cut -d ' ' -f$i tempfile1 | paste -s  | tr '\t' ' '> tempfile3
+                        
+                        # cat tempfile3   #test print
+                        
+
+                            for (( k=1; k<=$file1Rows; k++))
+                            do
+                                num1=$(cut -d ' ' -f$k tempfile3)
+                                sum=$(($sum + $num1))
+                                
+                            done
+                           echo $sum | tr "\n" " " >> tempfile4
+                           sum=0
+                        #    echo i % column: $(($i % $file1Cols))
+                        #    echo matrixSize/columns: $(($matrixSize / $file1Cols))
+                           if [ $(($i % $file1Cols)) -eq 0 ]
+                           then
+                                echo >> tempfile4
+                           fi
+                    done
+                    cat tempfile4
+                # cat tempfile1
+                # cat tempfile3   #test print
+                rm tempfile1 tempfile2 tempfile3 tempfile4                             #remove temp files
+
+                # sum=0
+
+                # for (( i=0; i<=$file1Rows; i++ ))
+                # do
+                #     for (( j=0; j<=$file1Cols; j++ ))
+                #     do
+                #         sum=$(( $row1 + $row2 ))
+                #         echo sum: "$sum"
+                #     done
+                # done
+            fi
         fi
     }
 #########################################################################################################
@@ -176,12 +257,14 @@
 #########################################################################################################
 # Variables
     varNumArguments=$#          #variable to save the number of arguments
-    varFileName=$2
+    varFileName=$2 
+    varSecondFileName=$3
 #########################################################################################################
 
 #########################################################################################################
 # Main Logic
-
+    # echo varRemainingArguments = $1 "${@:2}"        #test print
+    # echo varNumArguments = $varNumArguments         #test print
     if [ "$1" == "dims" ]           #If the first argument is dims then this logic will run
     then
         #Nested IF Statement
