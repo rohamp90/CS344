@@ -120,26 +120,48 @@
 ##############################################
             #test add newline to file
             # tempMean="tempmeanfile"
-            # cat $varFileName > "$tempMean"
-            # echo >> $varFileName
+            cat $varFileName | tr '\t' ' ' > tempmeanfile
+            # echo >> tempmeanfile
+            # cat -A tempmeanfile
             # tempVarRows="$(cat $tempMean | wc -l)"
-            # rm $tempMean
+            # rm tempmeanfile
 ####################################################
 
-            varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
+            varRows="$(cat tempmeanfile | wc -l)"   #testing using temp file
+            varCols="$(head -n 1 tempmeanfile | wc -w)" 
+            # varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
                                                         #to count the lines and assign to varRows
-            varCols="$(head -n 1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
+            
+
+            # varCols="$(head -n 1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
                                                         #which should give you the amount of columns
             
             for (( i=1; i<=$varCols; i++ ))             #for loop that runs based on the amount of columns matrix has
             do
                 # echo i: $i                              #test print
-                num=$(cat $varFileName | cut -f$i | paste -s)
+                # num=$(cat $varFileName | cut -f$i | paste -s)
 
-                for element in $num
+                # cat tempmeanfile | cut -d ' ' -f$i > tempfile1
+                # cut -d ' ' -f$i tempmeanfile | tr '\t' ' ' | tr '\n' ' '> tempfile1
+                cut -d ' ' -f$i tempmeanfile | paste -s | tr '\t' ' ' > tempfile1
+
+                # cut -f$i tempfile1 
+                # cat tempfile1                               #test print
+
+                for (( j=1; j<=$varRows; j++ ))
                 do
-                    sum=$(( sum + element ))
+                    # echo j: $j      #test print
+                    num=$(cut -d ' ' -f$j tempfile1)
+                    # echo num: $num              #test print
+                    sum=$(( $sum + $num ))
                 done
+                # num=$(cat tempmeanfile | cut -d ' ' -f$i | paste -s)       #testing using temp file instead of varFilename
+
+                # echo num: $num                        #test print
+                # for element in $num
+                # do
+                #     sum=$(( sum + element ))
+                # done
                 mean=$(( (sum + (varRows /2)*( (sum>0)*2-1))/ varRows ))        #equation from homework instructions
                
 
@@ -147,11 +169,13 @@
                 # printf "sum: %d\n" $sum                 #test print
                 # printf "num of rows:%d\n" $varRows      #test print
                 # printf "mean: %d\n\n" $mean              #test print
-                printf "%d " $mean
+                printf "%d\t" $mean
                 sum=0
                 mean=0
             done
                 printf "\n"
+
+            rm tempmeanfile tempfile1
             exit 0
         fi
     }
@@ -350,6 +374,10 @@ function multiply()
     elif [ "$1" == "multiply" ]
     then
         multiply
+
+    else 
+        echo error bad command >&2
+        exit 1
     fi
 
     exit 0
