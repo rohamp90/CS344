@@ -220,9 +220,9 @@
             file1Cols="$(head -n 1 $varFileName | wc -w)"
             file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
 
-            # echo file1Rows: $file1Rows
-            # echo file2Rows: $file2Rows
-            # echo file1Cols: $file1Cols
+            # echo file1Rows: $file1Rows                        #test print
+            # echo file2Rows: $file2Rows                        #test print
+            # echo file1Cols: $file1Cols                        #test print
             # echo file2Cols: $file2Cols
 
             if [ $file1Rows -ne $file2Rows ] || [ $file1Cols -ne $file2Cols ]           #check if matrix is same dimensions
@@ -232,108 +232,185 @@
 
             else
                 sum=0                                               #set sum = 0
+                num1=0
+                num2=0
                 matrixSize=$(( $file1Rows * $file1Cols ))           #calculate matrix size
+               
+  # ###############################################################################
                 # echo matrixSize: $matrixSize                      #test print
                 while read row1 <&3 && read row2 <&4;
                 do
 
-                    echo $row1 | tr "\n" "\t" | tr "\t" " " >> tempfile1          #send row contents of first file into a temp file
+                    # echo $row1 | tr "\n" "\t" | tr "\t" " " >> tempfile1          #send row contents of first file into a temp file
                     
-                    echo $row2 | tr "\n" "\t" | tr "\t" " " >> tempfile2          #send row contents of second file into a temp file
+                    # echo $row2 | tr "\n" "\t" | tr "\t" " " >> tempfile2          #send row contents of second file into a temp file
+                    
+                    # echo $row1 | tr "\n" "\t"  >> tempfile1 
+                    # echo $row2 | tr "\n" "\t"  >> tempfile2 
+                    # for (( i=1; i<=$file1Cols; i++ ))                 #adding to temp1file
+                    # do
+                    #     echo $row1 | cut -d ' ' -f$i >> tempfile1
+                    #     echo $row2 | cut -d ' ' -f$i >> tempfile1
+                    # done
+
+
+                    for (( i=1; i<=$file1Cols; i++ ))                 #adding to temp1file
+                    do
+                        echo $row1 | cut -d ' ' -f$i >> tempfile1
+                        # echo $row2 | cut -d ' ' -f$i >> tempfile1
+                        echo $row2 | cut -d ' ' -f$i >> tempfile2
+
+                    done
+
                     
                 done 3<"$varFileName" 4<"$varSecondFileName"
 
-                
-                # cat tempfile1                                     #test print
-                # cat tempfile2                                     #test print
-                    echo >> tempfile1                               #add a newline to tempfile
-                    echo >> tempfile2                               #add a newline to tempfile
-                    cat "tempfile2" >> "tempfile1"                  #cat contents of tempfile2 into tempfile1
-                    # cat tempfile1
+                # cat tempfile1
+                # cat tempfile2
 
+                cat tempfile1 | paste -s | tr '\t' ' ' > tempfile10
+                cat tempfile2 | paste -s | tr '\t' ' ' > tempfile20
 
-                #########################################################################
-                for (( i=1; i<=$file1Cols * $file1Rows; i++ ))             #for loop that runs based on the amount of columns matrix has
+                # cat tempfile10      #test print
+                # cat tempfile20      #test print
+
+                cat tempfile10 >> tempfile30
+                cat tempfile20 >> tempfile30
+
+                # while [ $i -le $matrixSize ]
+                # do
+                #     sum=0
+                #     cut -f $i "tempfile30" > tempfile40
+
+                #     while read num
+                #     do
+                #         echo num: $num
+                #         # sum=$(($sum + $num))
+                #     done <"tempfile40"
+
+                #     echo "$sum" | tr "\n" "\t" >> tempfile50
+
+                #     i=$((i+1))
+                # done
+
+                # cat tempfile50
+####--------------------------------
+                # # cat tempfile10                 #test print
+                tempCols="$(head -n 1 tempfile30 | wc -w)" 
+                # tempRows="$(cat tempfile30 | wc -l)"
+
+                endofline=0                                 #variable used to keep track of when to insert a newline
+                for (( i=1; i<=$tempCols; i++ ))             #for loop that runs based on the amount of columns matrix has
                 do
                     # echo i: $i                              #test print
-                # num=$(cat $varFileName | cut -f$i | paste -s)
+                    num1="$(cut -d ' ' -f$i tempfile10)"
+                    num2="$(cut -d ' ' -f$i tempfile20)"
+                    sum=$(($num1 + $num2))
+                    # echo sum: $sum
 
-                # cat tempmeanfile | cut -d ' ' -f$i > tempfile1
-                # cut -d ' ' -f$i tempmeanfile | tr '\t' ' ' | tr '\n' ' '> tempfile1
-                cut -d ' ' -f$i tempfile1 | paste -s | tr '\t' ' ' > tempfile3
+                    ((endofline++))
 
-                # cut -f$i tempfile1 
-                # cat tempfile3                               #test print
+                    echo $sum | tr "\n" "\t" >> tempfile3
 
-                    for (( j=1; j<=$file1Rows; j++ ))
-                    do
-                        # echo j: $j      #test print
-                        num=$(cut -d ' ' -f$j tempfile3)
-                        # echo num: $num              #test print
-                        sum=$(( $sum + $num ))
-                    done
-                # num=$(cat tempmeanfile | cut -d ' ' -f$i | paste -s)       #testing using temp file instead of varFilename
+                       if [[ "$endofline" -eq "$file1Cols" ]]   #conditonal to either insert a tab or newline
+                        then
+                            printf "%d\n" $sum
+                            endofline=0
+                        else
+                            printf "%s\t" $sum
+                        fi
 
-                # echo num: $num                        #test print
-                # for element in $num
-                # do
-                #     sum=$(( sum + element ))
-                # done
-                # mean=$(( (sum + (varRows /2)*( (sum>0)*2-1))/ varRows ))        #equation from homework instructions
-               
-
-
-                # printf "sum: %d\n" $sum                 #test print
-                # printf "num of rows:%d\n" $varRows      #test print
-                # printf "mean: %d\n\n" $mean              #test print
-                # printf "%d " $mean
-                
-                # echo $sum | tr '\n' '\t' >> tempfile4
-                
-                # mean=0
-
-                    if [ $(($i % $file1Cols)) -eq 0 ]             #put a newline in where the columns are done
-                    then
-                        echo $sum >> tempfile4
-                    else 
-                        echo $sum | tr '\n' '\t' >> tempfile4       #else put a tab
-                    fi
+                    # printf "sum: %d\n" $sum                 #test print
+                    # printf "num of rows:%d\n" $varRows      #test print
+                    # printf "mean: %d\n\n" $mean              #test print
+                    
                     sum=0
+                    
+
                 done
 
-                ##########################################################################
 
-                #    for (( i=1; i<=$matrixSize; i++))
-                #     do
-                #         cut -d ' ' -f$i tempfile1 | paste -s  | tr '\t' ' '> tempfile3
+                # cat tempfile3
+
+                # temp3Rows="$(cat tempfile3 | wc -l)"
+                # for ((j=1;j<=$temp3Rows; j++))
+                # do
+                #     if [ $(($j % $file1Cols)) -eq 0 ]
+                #     then
+                #         echo j: $j
+                #         # cat tempfile3 | paste -s >> tempfile40
                         
-                #         # cat tempfile3   #test print
-                #         rowstempfile3="$(cat tempfile3 | wc -l)" 
+                #     else
+                        
+                #         cat tempfile3 | paste -s >> tempfile40
+                #     fi
+                # done 
 
-                #             for (( k=1; k<=$file1Cols; k++))
-                #             do
-                #                 for (( j=2; j<=$file1Cols; j++))
-                                   
-                #                 do
-                #                     num1=$(cut -d ' ' -f$k tempfile3)
-                #                     sum=$(($sum + $num1))
-                #                     # echo k: $k            #test print
-                #                 done
-                #             done
-                #            echo $sum | tr "\n" " " >> tempfile4
-                #            sum=0
+                # cat tempfile2                     #test print
+                # cat tempfile3                     #test print
+                # cat tempfile40
+######------------------------------------------------
+                rm tempfile1 tempfile2 tempfile3 tempfile10 tempfile20 tempfile30                     #remove temp files
 
-                #            if [ $(($i % $file1Cols)) -eq 0 ]
-                #            then
-                #                 echo >> tempfile4
-                #            fi
-                #     done
-                #     cat tempfile4
-                # # cat tempfile1
-                # # cat tempfile3   #test print
-                cat tempfile4
-                rm tempfile1 tempfile2  tempfile3 tempfile4                           #remove temp files
 
+
+
+
+#######################################################################################
+                # while read line1 <&3 && read line2 <&4
+                # do
+                #     echo "$line1" | tr "\n" "\t" >> "temp50"
+                #     echo "$line2" | tr "\n" "\t" >> "temp60"
+                # done 3<$varFileName 4<$varSecondFileName
+                # echo >>"temp50"
+                # echo >>"temp60"
+
+                # cat temp50
+                # cat temp60
+
+                # cat "temp60" >> "temp50"
+
+                # i=1
+                # x=1
+
+                # while [ $i -le $matrixSize ]
+                # do
+                #     # echo i: $i
+                #     sum=0
+                #     cut -f $i "temp50" > "temp55"
+
+                # while read num
+                # do
+                #     sum=$(($sum + $num))
+                # done <"temp55"
+
+                # echo "$sum" | tr "\n" "\t" >> "temp65"
+                
+                # #try and remove hanging tab
+                # if [[ "$x" -eq "$file1Cols" ]]
+                # then
+                #     rev "temp65" > "temp222"
+                #     cat "temp222" | cut -c 1- >"temp333"
+                #     rev "temp333">"temp65"
+                #     x=0
+                # fi
+
+                # i=$((i+1))
+                # x=$((x+1))
+
+                # done
+
+                # cat "temp65"
+
+                # #remove temp files
+                # rm -f temp50   
+                # rm -f temp55
+                # rm -f temp60
+                # rm -f temp65
+                # rm -f temp70
+                # rm -f temp75
+                # rm -f temp222
+                # rm -f temp333
                 exit 0
             fi
         fi
