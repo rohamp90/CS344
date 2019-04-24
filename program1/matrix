@@ -117,68 +117,35 @@
             sum=0                                       #sum counter
             mean=0                                      #mean variable
 
-##############################################
-            #test add newline to file
-            # tempMean="tempmeanfile"
-            cat $varFileName | tr '\t' ' ' > tempmeanfile
-            # echo >> tempmeanfile
-            # cat -A tempmeanfile
-            # tempVarRows="$(cat $tempMean | wc -l)"
-            # rm tempmeanfile
-####################################################
+            cat $varFileName | tr '\t' ' ' > tempmeanfile       #using a tempfile and removing tabs from matrix and putting spaces instead
 
             varRows="$(cat tempmeanfile | wc -l)"   #testing using temp file
             varCols="$(head -n 1 tempmeanfile | wc -w)" 
             # varRows="$(cat $varFileName | wc -l)"       #piping the contents of the file to word count and using the -l option
                                                         #to count the lines and assign to varRows
-            
 
             # varCols="$(head -n 1 $varFileName | wc -w)"             #take the first line and word count the number of items in the first line
                                                         #which should give you the amount of columns
             
             for (( i=1; i<=$varCols; i++ ))             #for loop that runs based on the amount of columns matrix has
             do
-                # echo i: $i                              #test print
-                # num=$(cat $varFileName | cut -f$i | paste -s)
 
-                # cat tempmeanfile | cut -d ' ' -f$i > tempfile1
-                # cut -d ' ' -f$i tempmeanfile | tr '\t' ' ' | tr '\n' ' '> tempfile1
                 cut -d ' ' -f$i tempmeanfile | paste -s | tr '\t' ' ' > tempfile1
-
-                # cut -f$i tempfile1 
-                # cat tempfile1                               #test print
 
                 for (( j=1; j<=$varRows; j++ ))
                 do
-                    # echo j: $j      #test print
-                    num=$(cut -d ' ' -f$j tempfile1)
-                    # echo num: $num              #test print
-                    sum=$(( $sum + $num ))
+                    num=$(cut -d ' ' -f$j tempfile1)            #grab number from tempfile
+                    sum=$(( $sum + $num ))                      #add number to sum
                 done
-                # num=$(cat tempmeanfile | cut -d ' ' -f$i | paste -s)       #testing using temp file instead of varFilename
 
-                # echo num: $num                        #test print
-                # for element in $num
-                # do
-                #     sum=$(( sum + element ))
-                # done
                 mean=$(( (sum + (varRows /2)*( (sum>0)*2-1))/ varRows ))        #equation from homework instructions
-               
-
-
-                # printf "sum: %d\n" $sum                 #test print
-                # printf "num of rows:%d\n" $varRows      #test print
-                # printf "mean: %d\n\n" $mean              #test print
-                # printf "%d " $mean
                 
                 echo $mean >> tempfile2
                 sum=0
                 mean=0
 
             done
-                # printf "\n"
-                # cat tempfile2 | tr 'n' ' ' |paste -s | tr '\t' ' ' > tempfile3
-                cat tempfile2 | tr 'n' ' ' |paste -s  > tempfile3
+                cat tempfile2 | tr 'n' ' ' |paste -s  > tempfile3           #manipulate tempfile to send contents to single line
                 cat tempfile3
             rm tempmeanfile tempfile1 tempfile2 tempfile3
             exit 0
@@ -197,7 +164,7 @@
     function add () 
     {
         #Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
-    
+        #Using 3 in the conditional b/c I am counting "add" as an argument
         if [ $varNumArguments -ne 3 ]
         then 
             echo "invalid number of arguments" >&2
@@ -224,38 +191,35 @@
 
             else
                 sum=0                                               #set sum = 0
-                num1=0
+                num1=0                                              #will be used to add to num1 and num2
                 num2=0
                 matrixSize=$(( $file1Rows * $file1Cols ))           #calculate matrix size
  
                 while read row1 <&3 && read row2 <&4;
                 do
-
-                    for (( i=1; i<=$file1Cols; i++ ))                 #adding to temp1file
+                    for (( i=1; i<=$file1Cols; i++ ))                 #adding to temp1file and tempfile2
                     do
-                        echo $row1 | cut -d ' ' -f$i >> tempfile1
+                        echo $row1 | cut -d ' ' -f$i >> tempfile1       #puts contents in multiple row but one column
                         echo $row2 | cut -d ' ' -f$i >> tempfile2
                     done
-
-                    
                 done 3<"$varFileName" 4<"$varSecondFileName"
 
-                cat tempfile1 | paste -s | tr '\t' ' ' > tempfile10
+
+                cat tempfile1 | paste -s | tr '\t' ' ' > tempfile10     #manipulating tempfile to put in single line
                 cat tempfile2 | paste -s | tr '\t' ' ' > tempfile20
 
-
-                cat tempfile10 >> tempfile30
+                cat tempfile10 >> tempfile30                        #send tempfile1 and tempfile2 contents to a single file to be added
                 cat tempfile20 >> tempfile30
                 
 
-                tempCols="$(head -n 1 tempfile30 | wc -w)" 
+                tempCols="$(head -n 1 tempfile30 | wc -w)"      #get a temp number of columns to be used in for loop
 
                 endofline=0                                 #variable used to keep track of when to insert a newline
                 for (( i=1; i<=$tempCols; i++ ))             #for loop that runs based on the amount of columns matrix has
                 do
                     num1="$(cut -d ' ' -f$i tempfile10)"    #assign number so that i can add sum together
                     num2="$(cut -d ' ' -f$i tempfile20)"
-                    sum=$(($num1 + $num2))
+                    sum=$(($num1 + $num2))                  #calculate sum
 
                     ((endofline++))
 
@@ -268,9 +232,7 @@
                         else
                             printf "%s\t" $sum
                         fi
-                    
                     sum=0
-
                 done
 
                 rm tempfile1 tempfile2 tempfile3 tempfile10 tempfile20 tempfile30                     #remove temp files
@@ -293,8 +255,8 @@
 
 function multiply() 
 {
-        #Argument count does not equal 2 (e.g. `matrix add m1 m2 m3` or `matrix add m1`).
-    
+        #Argument count does not equal 2 (e.g. `matrix multiply m1 m2 m3` or `matrix multiply m1`).
+        #Using 3 in the conditional b/c I am counting "multiply" as an argument
         if [ $varNumArguments -ne 3 ]
         then 
             echo "invalid number of arguments" >&2
@@ -313,65 +275,63 @@ function multiply()
             file1Cols="$(head -n 1 $varFileName | wc -w)"
             file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
 
-            if [ $file1Rows -ne $file2Cols ] || [ $file1Cols -ne $file2Rows ]           #check if matrix is same dimensions
+            if [ $file1Rows -ne $file2Cols ] || [ $file1Cols -ne $file2Rows ]           #check if matrix1 has same amount of row as matrix2 columns or viceversa
             then
                 echo matrix is not able to be multiplied>&2
                 exit 1
 
             else
-            
-                file1Rows="$(cat $varFileName | wc -l)" 
+
+                file1Rows="$(cat $varFileName | wc -l)"                     #variables used to keep track of number of rows and cols in matrix1 and matrix2
                 file2Rows="$(cat $varSecondFileName | wc -l)" 
                 file1Cols="$(head -n 1 $varFileName | wc -w)"
                 file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
-                endofline=1                                 #variable used to keep track of when to insert a newline
-
+                
                 while read row1 <&3
                 do
-                    echo $row1 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile1
+                    echo $row1 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile1              #send matrix1 contents into tempfile1
                 done 3<"$varFileName"
 
                 while read row2 <&4
                 do
-                    echo $row2 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile2
+                    echo $row2 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile2              #send matrix2 contents into tempfile2
                 done 4<"$varSecondFileName"
 
                 declare -A matrix1      #declare matrix1
                 declare -A matrix2      #declare matrix2
-                # declare -A matrix3
 
-                counter=1
+                counter=1           #keep count for cutting fields
                 for (( i=1; i<=$file1Rows; i++ ))
                 do
                     for (( j=1; j<=$file1Cols; j++ ))
                     do
-                        matrix1[$i,$j]="$(cut -d ' ' -f$counter tempfile1)"
+                        matrix1[$i,$j]="$(cut -d ' ' -f$counter tempfile1)"     #assign contents of tempfile1 to matrix1 in an array
                         ((counter++))
                     done
                 done
-                counter=1
+                counter=1       #reset counter to cut through fields in tempfile2
                 for (( i=1; i<=$file2Rows; i++ ))
                 do
                     for (( j=1; j<=$file2Cols; j++ ))
                     do
-                        matrix2[$i,$j]="$(cut -d ' ' -f$counter tempfile2)"
+                        matrix2[$i,$j]="$(cut -d ' ' -f$counter tempfile2)"     #assign contents of tempfile2 to matrix2 in an array
                         ((counter++))
                     done
                 done
 
-                sum=0
-                count=1
+                sum=0       #inialize sum variable
+                count=1     #used for knowing when to add a tab or newline for output
                 for (( i=1; i<=$file1Rows; i++))
                 do
                     for (( j=1; j<=$file2Cols; j++ ))
                     do
                             for (( k=1; k<=$file2Rows; k++ ))
                             do
-                                sum="$((${matrix1[$i,$k]} * ${matrix2[$k,$j]} + $sum))"
+                                sum="$((${matrix1[$i,$k]} * ${matrix2[$k,$j]} + $sum))"         #muliply matrix1 by matrix2 and add to sum
                             done 
                             matrix3[$i,$j]=$sum
 
-                            if [[ "$count" -eq "$file2Cols" ]]   #conditonal to either insert a tab or newline
+                            if [[ "$count" -eq "$file2Cols" ]]   #conditonal to either insert a tab or newline depending on file2Cols
                                 then
                                     printf "%d\n" $sum
                                     count=0
@@ -379,7 +339,7 @@ function multiply()
                                     printf "%s\t" $sum
                                 fi
                                 ((count++))
-                            sum=0
+                            sum=0       #reset sum for next loop
                     done
                 done
 
