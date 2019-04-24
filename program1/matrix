@@ -333,7 +333,7 @@ function multiply()
                 file2Rows="$(cat $varSecondFileName | wc -l)" 
                 file1Cols="$(head -n 1 $varFileName | wc -w)"
                 file2Cols="$(head -n 1 $varSecondFileName | wc -w)"
-                
+                endofline=1                                 #variable used to keep track of when to insert a newline
                 # while read row1 <&3 && read row2 <&4;
                 # do
 
@@ -351,15 +351,15 @@ function multiply()
                     echo $row1 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile1
                 done 3<"$varFileName"
 
-                # while read row2 <&4
-                # do
-                #     echo $row2 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile2
-                # done 4<"$varSecondFileName"
-
-                for (( i=1; i<=$file2Cols; i++ ))
+                while read row2 <&4
                 do
-                    cut -f$i $varSecondFileName | paste -s | tr '\n' '\t' | tr '\t' ' ' >> tempfile2
-                done
+                    echo $row2 | paste -s | tr '\n' '\t' | tr '\t' ' '>> tempfile2
+                done 4<"$varSecondFileName"
+
+                # for (( i=1; i<=$file2Cols; i++ ))
+                # do
+                #     cut -f$i $varSecondFileName | paste -s | tr '\n' '\t' | tr '\t' ' ' >> tempfile2
+                # done
 
        
 
@@ -381,81 +381,184 @@ function multiply()
                 num1=0
                 num2=0
 
-                echo file2rows: $file2Rows
-                cat tempfile2
+                # echo file2rows: $file2Rows        #test print
+                # cat tempfile1                   #test print
+                # echo
+                # cat tempfile2                   #test print
+                # echo                            #test echo
+
+                tempk=1
+                tempj=1
+                matrixCounter=$(($file1Rows * $file2Rows))
+                # echo matrixCounter: $matrixCounter            #test print
                 # for (( i=1; i<=$file1Rows; i++ ))   #going across first row then downward
+                # do
+                #     for (( k=1; k<=$file1Cols; k++ ))
+                #     do
+                #         for (( j=1; j<=$file2Rows; j++ ))
+                #         do
+                #             # for (( p=1; p<=$file2Cols; p++))
+                #             # do
+                #                 # echo i: $i            #test print
+                #                 # echo j: $j            #test print
+                #                 # echo k: $k            #test print
+                #                 # echo tempk: $tempk        #test print
+                #                 # echo tempj: $tempj        #test print
+                #                 # echo p: $p            #test print
+                #                 # tempk="$(($j * $i + $j))"
+                                
+                #                 num1="$(cut -d ' ' -f$tempj tempfile1)"
+                #                 num2="$(cut -d ' ' -f$tempk tempfile2)"
+                #                 sum="$(( $num1 * $num2 + $sum))"
+                                
+                #                 # echo num1: $num1      #test print
+                #                 # echo num2: $num2      #test print
+                #                 # echo sum: $sum        #test print
+                #                 # echo                  #test print
+                #                 # ((j++))
+                #                 # ((k++))
+                #                 ((tempk++))
+                #                 ((tempj++))
+                #             # done
+                #         done
+                #         # echo endofline: $endofline
+                #         # echo file1Cols: $file1Cols
+                #         if [[ "$endofline" -eq "$file2Cols" ]]   #conditonal to either insert a tab or newline
+                #         then
+                #             printf "%d\n" $sum
+                #             endofline=0
+                #         else
+                #             printf "%s\t" $sum
+                #         fi
+                #         ((endofline++))
+                #         sum=0
+                #         if [ $tempk -ge $matrixCounter ]
+                #         then
+                #             tempk=1
+                #             tempj=$(($file1Cols + 1))
+                #             # echo reassigning tempj!!!!        #test print
+                #             # echo tempj: $tempj
+                #             # echo
+                        
+                #         elif [ $tempj -ge $matrixCounter ]
+                #         then
+                #             tempj=$(($file1Cols + 1))
+                #             # echo reassigning tempj in a different way!!!!       #test print
+                #             # echo tempj: $tempj
+                #         else
+                #             tempj=1
+                #         fi
+                #     done
+                #     ((i++))
+                    
+                # done
+
+                declare -A matrix1
+                declare -A matrix2
+                declare -A matrix3
+
+                counter=1
+                for (( i=1; i<=$file1Rows; i++ ))
+                do
+                    for (( j=1; j<=$file1Cols; j++ ))
+                    do
+                        matrix1[$i,$j]="$(cut -d ' ' -f$counter tempfile1)"
+                        # echo matrix1[$i,$j] = ${matrix1[$i,$j]}
+                        ((counter++))
+                    done
+                done
+                # echo 
+                counter=1
+                for (( i=1; i<=$file2Rows; i++ ))
+                do
+                    for (( j=1; j<=$file2Cols; j++ ))
+                    do
+                        matrix2[$i,$j]="$(cut -d ' ' -f$counter tempfile2)"
+                        # echo matrix2[$i,$j] = ${matrix2[$i,$j]}
+                        ((counter++))
+                    done
+                done
+
+                sum=0
+                count=1
+                for (( i=1; i<=$file1Rows; i++))
+                do
+                    for (( j=1; j<=$file2Cols; j++ ))
+                    do
+                        # for (( p=1; p<=$file2Cols; p++ ))
+                        # do
+                            for (( k=1; k<=$file2Rows; k++ ))
+                            do
+                                # echo i: $i            #   test print
+                                # echo j: $j            #test print
+                                # # echo p: $p
+                                # echo k: $k            #test print
+                                
+                                # num1="$(cut -d ' ' -f$j tempfile1)"
+                                # num2="$(cut -d ' ' -f$k tempfile2)"
+                                # sum="$(( $num1 * $num2 + $sum))"
+                                # echo num1: $num1      #test print
+                                # echo num2: $num2      #test print
+                                # echo sum: $sum        #test print
+                                # echo                  #test print
+                                # echo matrix1[$i,$k] = ${matrix1[$i,$j]}
+                                # echo matrix2[$k,$j] = ${matrix2[$k,$j]}
+                                # echo "${matrix1[$i,$k]} * ${matrix2[$k,$j]}"
+                                sum="$((${matrix1[$i,$k]} * ${matrix2[$k,$j]} + $sum))"
+                                # echo sum: $sum
+                                # echo count: $count
+                            done 
+                            matrix3[$i,$j]=$sum
+                            # echo matrix3[$i,$j] = ${matrix3[$i,$j]}
+
+                            if [[ "$count" -eq "$file2Cols" ]]   #conditonal to either insert a tab or newline
+                                then
+                                    printf "%d\n" $sum
+                                    count=0
+                                else
+                                    printf "%s\t" $sum
+                                fi
+                                ((count++))
+                            sum=0
+                        # done
+                    done
+                done
+
+
+                #testing
+                # for (( k=1; k<=$file2Rows; k++ ))
                 # do
                 #     for (( j=1; j<=$file1Cols; j++ ))
                 #     do
-                #         for (( k=1; k<=$file2Rows; k++ ))
+                #         for (( p=1; p<=$file2Cols; p++ ))
                 #         do
-                #             echo i: $i
-                #             echo j: $j
-                #             echo k: $k
-                #             num1="$(cut -d ' ' -f$j tempfile1)"
-                #             num2="$(cut -d ' ' -f$k tempfile2)"
-                #             sum="$(( $num1 * $num2 + $sum))"
-                #             echo $sum >> tempfile4
-                #             echo num1: $num1
-                #             echo num2: $num2
-                #             echo sum: $sum
-                #             echo
-                #             ((j++))
-                #             # ((k++))
+                #             for (( i=1; i<=$file1Rows; i++))
+                #             do
+                #                 echo i: $i            #   test print
+                #                 echo j: $j            #test print
+                #                 echo p: $p
+                #                 echo k: $k            #test print
+                                
+                #                 # num1="$(cut -d ' ' -f$j tempfile1)"
+                #                 # num2="$(cut -d ' ' -f$k tempfile2)"
+                #                 # sum="$(( $num1 * $num2 + $sum))"
+                #                 # echo num1: $num1      #test print
+                #                 # echo num2: $num2      #test print
+                #                 # echo sum: $sum        #test print
+                #                 # echo                  #test print
+                #                 echo matrix1[$i,$j] = ${matrix1[$i,$j]}
+                #                 echo matrix2[$i,$k] = ${matrix2[$i,$k]}
+                #                 echo "${matrix1[$i,$j]} * ${matrix2[$k,$p]}"
+                #                 matrix3[$i,$j]="$((${matrix1[$i,$j]} * ${matrix2[$k,$p]}))"
+                #                 echo matrix3[$i,$j] = ${matrix3[$i,$j]}
+                #             done 
                 #         done
-                #         ((i++))
                 #     done
                 # done
 
-                for (( j=1; j<=$file1Cols; j++ ))
-                    do
-                        for (( k=1; k<=$file2Rows; k++ ))
-                        do
-                            echo i: $i
-                            echo j: $j
-                            echo k: $k
-                            num1="$(cut -d ' ' -f$j tempfile1)"
-                            num2="$(cut -d ' ' -f$k tempfile2)"
-                            sum="$(( $num1 * $num2 + $sum))"
-                            echo $sum >> tempfile4
-                            echo num1: $num1
-                            echo num2: $num2
-                            echo sum: $sum
-                            echo
-                            ((j++))
-                            # ((k++))
-                        done
-                        ((i++))
-                    done
 
-                    cat tempfile4
 
-                tempCols="$(head -n 1 tempfile30 | wc -w)" 
-
-                endofline=0                                 #variable used to keep track of when to insert a newline
-                for (( i=1; i<=$tempCols; i++ ))             #for loop that runs based on the amount of columns matrix has
-                do
-                    num1="$(cut -d ' ' -f$i tempfile10)"    #assign number so that i can add sum together
-                    num2="$(cut -d ' ' -f$i tempfile20)"
-                    # sum=$(($num1 * $num2))
-
-                    ((endofline++))
-
-                    echo $sum | tr "\n" "\t" >> tempfile3
-
-                    #    if [[ "$endofline" -eq "$file1Cols" ]]   #conditonal to either insert a tab or newline
-                    #     then
-                    #         printf "%d\n" $sum
-                    #         endofline=0
-                    #     else
-                    #         printf "%s\t" $sum
-                    #     fi
-                    
-                    sum=0
-
-                done
-
-                rm tempfile1 tempfile2 tempfile3 tempfile4 tempfile10 tempfile20 tempfile30                     #remove temp files
+                rm tempfile1 tempfile2 tempfile10 tempfile20 tempfile30                     #remove temp files
 
                 exit 0
 
