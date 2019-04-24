@@ -338,7 +338,7 @@ function multiply()
 
                 declare -A matrix1      #declare matrix1
                 declare -A matrix2      #declare matrix2
-                declare -A matrix3
+                # declare -A matrix3
 
                 for (( i=1; i<=$file1Rows; i++ ))
                 do
@@ -380,7 +380,7 @@ function multiply()
                     done
                 done
 
-                rm tempfile1 tempfile2 tempfile10 tempfile20 tempfile30                     #remove temp files
+                rm tempfile1 tempfile2                    #remove temp files
 
                 exit 0
 
