@@ -340,19 +340,22 @@ function multiply()
                 declare -A matrix2      #declare matrix2
                 # declare -A matrix3
 
+                counter=1
                 for (( i=1; i<=$file1Rows; i++ ))
                 do
                     for (( j=1; j<=$file1Cols; j++ ))
                     do
                         matrix1[$i,$j]="$(cut -d ' ' -f$counter tempfile1)"
+                        ((counter++))
                     done
                 done
-
+                counter=1
                 for (( i=1; i<=$file2Rows; i++ ))
                 do
                     for (( j=1; j<=$file2Cols; j++ ))
                     do
                         matrix2[$i,$j]="$(cut -d ' ' -f$counter tempfile2)"
+                        ((counter++))
                     done
                 done
 
