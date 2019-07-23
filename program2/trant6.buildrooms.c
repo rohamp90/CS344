@@ -1,7 +1,7 @@
 /*
  * Tuan Tran
  * 7/17/19
- * 
+ * buildrooms.c file
  */
 
 #include <stdio.h>
@@ -40,9 +40,6 @@ struct Room {
 
 
 
-
-
-
 // Returns true if all rooms have 3 to 6 outbound connections, false otherwise
 bool IsGraphFull()  
 {
@@ -57,22 +54,22 @@ void AddRandomConnection()
   struct Room A;  // Maybe a struct, maybe global arrays of ints
   struct Room B;
 
-  while(true)
-  {
-    A = GetRandomRoom();
+//   while(true)
+//   {
+//     A = GetRandomRoom();
 
-    if (CanAddConnectionFrom(A) == true)
-      break;
-  }
+//     if (CanAddConnectionFrom(A) == true)
+//       break;
+//   }
 
-  do
-  {
-    B = GetRandomRoom();
-  }
-  while(CanAddConnectionFrom(B) == false || IsSameRoom(A, B) == true || ConnectionAlreadyExists(A, B) == true);
+//   do
+//   {
+//     B = GetRandomRoom();
+//   }
+//   while(CanAddConnectionFrom(B) == false || IsSameRoom(A, B) == true || ConnectionAlreadyExists(A, B) == true);
 
-  ConnectRoom(A, B);  // TODO: Add this connection to the real variables, 
-  ConnectRoom(B, A);  //  because this A and B will be destroyed when this function terminates
+//   ConnectRoom(A, B);  // TODO: Add this connection to the real variables, 
+//   ConnectRoom(B, A);  //  because this A and B will be destroyed when this function terminates
 }
 
 // Returns a random Room, does NOT validate if connection can be added
@@ -92,11 +89,11 @@ bool CanAddConnectionFrom(struct Room x)
     return true;
 }
 // Returns true if a connection from Room x to Room y already exists, false otherwise
-bool ConnectionAlreadyExists(x, y)
+bool ConnectionAlreadyExists(struct Room x, struct Room y)
 {
 //   ...
 
-    return false;
+    return true;
 }
 
 // Connects Rooms x and y together, does not check if this connection is valid
@@ -126,10 +123,18 @@ bool IsSameRoom(struct Room x, struct Room y)
 int main ()
 {
     // Create all connections in graph
-    while (IsGraphFull() == false)
-    {
-    AddRandomConnection();
-    }
+    // while (IsGraphFull() == false)
+    // {
+    //     AddRandomConnection();
+    // }
+
+    struct Room a;
+    a.type = "START_ROOM";
+    struct Room b;
+    b.type = "START_ROOM";
+
+    if (ConnectionAlreadyExists(a, b))
+        printf("Connection already exists\n");
 
     return 0;
 }
