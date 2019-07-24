@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> // for random number
+#include <sys/types.h>  // source https://www.systutorials.com/241721/how-to-get-the-running-process-pid-in-c-c/
+#include <unistd.h> // https://www.systutorials.com/241721/how-to-get-the-running-process-pid-in-c-c/
 
 // typedef int bool;
 // enum { false, true }; // create enum for true and false 
@@ -23,13 +26,11 @@ enum ROOMTYPE
     END_ROOM
 };
 
-
-
 struct Room {
-    char * name;    //Room Name; Max 8 char long; only upper and lowercase allowed
-    enum ROOMTYPE type;    //Room Type: START_ROOM, END_ROOM, MID_ROOM
+    char * name;            //Room Name; Max 8 char long; only upper and lowercase allowed
+    enum ROOMTYPE type;     //Room Type: START_ROOM, END_ROOM, MID_ROOM
     struct Room * connections[6]; // Must have at least 3 outbound and at most 6 outbound
-    int numConnections;
+    int numConnections;     //Count of Number of Room Connections
 };
 
 //Global Variables
@@ -59,81 +60,53 @@ bool IsGraphFull()
 
     bool result = false;
 
-    for (i = 0; i < 7; i++)
+    for (i = 0; i < 7; i++) //Loop through all 7 of the room Array
     {
+
         if ( (roomArray[i].numConnections >= 3) && (roomArray[i].numConnections <= 6) )
         {
             result = true;
         }
         else 
         {
-            result = false;
+            return false;   // Can return false if the graph is not full
         }
     }
 
     return result;
 }
 
-// Adds a random, valid outbound connection from a Room to another Room
-void AddRandomConnection()  
-{
-  struct Room A;  // Maybe a struct, maybe global arrays of ints
-  struct Room B;
-
-//   while(true)
-//   {
-//     A = GetRandomRoom();
-
-//     if (CanAddConnectionFrom(A) == true)
-//       break;
-//   }
-
-//   do
-//   {
-//     B = GetRandomRoom();
-//   }
-//   while(CanAddConnectionFrom(B) == false || IsSameRoom(A, B) == true || ConnectionAlreadyExists(A, B) == true);
-
-//   ConnectRoom(A, B);  // TODO: Add this connection to the real variables, 
-//   ConnectRoom(B, A);  //  because this A and B will be destroyed when this function terminates
-}
-
 // Returns a random Room, does NOT validate if connection can be added
-struct Room GetRandomRoom()
+struct Room * GetRandomRoom()
 {
-//   ...
-    struct Room A;
-
+    int i;
+    int number = rand() % 7;
+    struct Room * A = &roomArray[number];
     return A;
 }
 
-// Returns true if a connection can be added from Room x (< 6 outbound connections), false otherwise
-bool CanAddConnectionFrom(struct Room x) 
-{
-//   ...
-
-    return true;
-}
-// Returns true if a connection from Room x to Room y already exists, false otherwise
-bool ConnectionAlreadyExists(struct Room x, struct Room y)
-{
-//   ...
-
-    return true;
-}
-
 // Connects Rooms x and y together, does not check if this connection is valid
-void ConnectRoom(struct Room x, struct Room y) 
+void ConnectRoom(struct Room * x, struct Room * y) 
 {
-//   ...
+    //Test Print
+    // printf("Room %s is now connected to Room %s\n", x->name, y->name);
+    int xConnectionIndex = x->numConnections;
+
+    x->connections[xConnectionIndex] = y;
+    x->numConnections++;
+    // y->numConnections++;
+
+    //Test Print
+    // printf("Room %s connections: %d\n", x->name, x->numConnections);
+    // printf("Room %s connections: %d\n", y->name, y->numConnections);
 }
 
 // Returns true if Rooms x and y are the same Room, false otherwise
-bool IsSameRoom(struct Room x, struct Room y) 
+bool IsSameRoom(struct Room * x, struct Room * y) 
 {
 //   ...
 
-    if (strcmp(x.name, y.name) == 1)
+    if (strcmp(x->name, y->name) == 0)
     {
         return true;
     }
@@ -146,16 +119,79 @@ bool IsSameRoom(struct Room x, struct Room y)
     
 }
 
+// Returns true if a connection can be added from Room x (< 6 outbound connections), false otherwise
+bool CanAddConnectionFrom(struct Room * x) 
+{
+    if (x->numConnections < 6)   //check if x has < 6 outbound connections
+    {
+        // printf("Room %s ", x.name);                         //Test Print
+        // printf("Num Connections: %d\n", x.numConnections);  //Test Print
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+    
+    
+}
+// Returns true if a connection from Room x to Room y already exists, false otherwise
+bool ConnectionAlreadyExists(struct Room * x, struct Room * y)
+{
+    int i; 
+    bool result = false;
+    for (i = 0; i < x->numConnections; i++)
+    {
+        if (strcmp(x->connections[i]->name, y->name) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+// Adds a random, valid outbound connection from a Room to another Room
+void AddRandomConnection()  
+{
+  struct Room * A ;  // Maybe a struct, maybe global arrays of ints
+  struct Room * B ;
+
+  while(true)
+  {
+    A = GetRandomRoom();
+    // printf("Random Room A: %s\n", A->name);  //Test Print
+
+    if (CanAddConnectionFrom(A))
+      break;
+  }
+
+  do
+  {
+    B = GetRandomRoom();
+    // printf("Random Room B: %s\n", B->name); // Test Print
+  }
+  while(CanAddConnectionFrom(B) == false || IsSameRoom(A, B) == true || ConnectionAlreadyExists(A, B) == true);
+
+  ConnectRoom(A, B);  // TODO: Add this connection to the real variables, 
+  ConnectRoom(B, A);  //  because this A and B will be destroyed when this function terminates
+}
+
+
+
 int main ()
 {
+    pid_t pid = getpid();
 
+    char command [50];
+    char stringPID [32];
+    sprintf(stringPID, "%d", pid);
+    strcpy(command, "mkdir trant6.rooms.");
+    strcat(command, stringPID);
 
-
-    // Create all connections in graph
-    // while (IsGraphFull() == false)
-    // {
-    //     AddRandomConnection();
-    // }
+    // printf("%s\n", command); // Test Print
+    system(command);
 
     //Initialize the roomArray with values 
     int i; 
@@ -168,11 +204,59 @@ int main ()
     }
 
     //Assign roomArray names
+    // Need to randomize as well
     for(i = 0; i < 7; i++)
     {
         roomArray[i].name = ROOM_NAMES[i];
-        printf("Room name: %s\n", roomArray[i].name);
+        // roomArray[i].numConnections = 2;        //test outbound connections
+        // printf("Room %d: %s\n", i+1, roomArray[i].name);
+        // printf("Room connections: %d\n", roomArray[i].numConnections);
     }
+
+    // Create all connections in graph
+    while (IsGraphFull() == false)
+    {
+        AddRandomConnection();
+    }
+
+    //Testing
+    // for(i = 0; i < 7; i++)
+    // {
+    //     printf("Room %d: %s\n", i+1, roomArray[i].name);
+    //     printf("Room connections: %d\n", roomArray[i].numConnections);
+    // }
+
+    // //Testing Room Connections
+    // printf("Room 1: %s: Connections\n", roomArray[0].name);
+    // for(i = 0; i < roomArray[0].numConnections; i++)
+    // { 
+    //     printf("%s\n", roomArray[0].connections[i]->name);
+    // }
+
+    // printf("Room 2: %s: Connections\n", roomArray[1].name);
+    // for(i = 0; i < roomArray[1].numConnections; i++)
+    // { 
+    //     printf("%s\n", roomArray[1].connections[i]->name);
+    // }
+    
+    // //Test if Atherton and Belmont Connect
+    // if(ConnectionAlreadyExists(&roomArray[0], &roomArray[1]))
+    // {
+    //     printf("Rooms CONNECTED!\n");
+    // }
+    /*
+    // Testing ConnectRoom
+
+    printf("Connecting Room %s and Room %s\n", roomArray[0].name, roomArray[1].name);
+    ConnectRoom(&roomArray[0], &roomArray[1]);
+    ConnectRoom(&roomArray[1], &roomArray[0]);
+    for(i = 0; i < 7; i++)
+    {
+
+        printf("Room %d: %s\n", i+1, roomArray[i].name);
+        printf("Room connections: %d\n", roomArray[i].numConnections);
+    }
+     */
 
 
     // if (ConnectionAlreadyExists(a, b))
@@ -180,16 +264,26 @@ int main ()
 
 
 
+
+
+
+    //Testing below
+
+    // struct Room randomRoom = GetRandomRoom();           //Testing GetRandomRoom Function
+    // printf("Get random room: %s\n", randomRoom.name);   //Testing CanAddConnectionFrom Function Print
+    // CanAddConnectionFrom(randomRoom);                   //Testing CanAddConnectionFrom Function
+
+
     /* 
     //Test isGraphFull
 
     if (IsGraphFull())
     {
-        printf("True\n");
+        printf("Graph Full\n");
     }
     else
     {
-        printf("False\n");
+        printf("Graph Not FUll\n");
     }
     */
 
