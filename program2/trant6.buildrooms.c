@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // typedef int bool;
 // enum { false, true }; // create enum for true and false 
@@ -14,6 +15,25 @@
 typedef int bool;
 #define true 1
 #define false 0
+
+enum ROOMTYPE
+{
+    START_ROOM, 
+    MID_ROOM,
+    END_ROOM
+};
+
+
+
+struct Room {
+    char * name;    //Room Name; Max 8 char long; only upper and lowercase allowed
+    enum ROOMTYPE type;    //Room Type: START_ROOM, END_ROOM, MID_ROOM
+    struct Room * connections[6]; // Must have at least 3 outbound and at most 6 outbound
+    int numConnections;
+};
+
+//Global Variables
+struct Room roomArray[7];       //Array to hold 7 out of the 10 rooms
 
 //Hard Coded Room Names
 char * ROOM_NAMES[10] = 
@@ -31,21 +51,27 @@ char * ROOM_NAMES[10] =
     "SanMateo"
 };
 
-struct Room {
-    char * name[8];    //Room Name; Max 8 char long; only upper and lowercase allowed
-    char * type;    //Room Type: START_ROOM, END_ROOM, MID_ROOM
-    int * connections[6]; // Must have at least 3 outbound and at most 6 outbound
-    int numConnections;
-};
-
-
 
 // Returns true if all rooms have 3 to 6 outbound connections, false otherwise
 bool IsGraphFull()  
 {
-//   ...
+    int i;
 
-    return false;
+    bool result = false;
+
+    for (i = 0; i < 7; i++)
+    {
+        if ( (roomArray[i].numConnections >= 3) && (roomArray[i].numConnections <= 6) )
+        {
+            result = true;
+        }
+        else 
+        {
+            result = false;
+        }
+    }
+
+    return result;
 }
 
 // Adds a random, valid outbound connection from a Room to another Room
@@ -107,10 +133,10 @@ bool IsSameRoom(struct Room x, struct Room y)
 {
 //   ...
 
-    // if (x = y)
-    // {
-    //     return true;
-    // }
+    if (strcmp(x.name, y.name) == 1)
+    {
+        return true;
+    }
     // else
     // {
     //     return false;
@@ -122,19 +148,50 @@ bool IsSameRoom(struct Room x, struct Room y)
 
 int main ()
 {
+
+
+
     // Create all connections in graph
     // while (IsGraphFull() == false)
     // {
     //     AddRandomConnection();
     // }
 
-    struct Room a;
-    a.type = "START_ROOM";
-    struct Room b;
-    b.type = "START_ROOM";
+    //Initialize the roomArray with values 
+    int i; 
+    int j;
 
-    if (ConnectionAlreadyExists(a, b))
-        printf("Connection already exists\n");
+    //Initalize 7 Rooms
+    for(i=0; i < 7; i++)
+    {
+        roomArray[i].numConnections = 0; //initalize number of room connections to 0 1st
+    }
+
+    //Assign roomArray names
+    for(i = 0; i < 7; i++)
+    {
+        roomArray[i].name = ROOM_NAMES[i];
+        printf("Room name: %s\n", roomArray[i].name);
+    }
+
+
+    // if (ConnectionAlreadyExists(a, b))
+    //     printf("Connection already exists\n");
+
+
+
+    /* 
+    //Test isGraphFull
+
+    if (IsGraphFull())
+    {
+        printf("True\n");
+    }
+    else
+    {
+        printf("False\n");
+    }
+    */
 
     return 0;
 }
