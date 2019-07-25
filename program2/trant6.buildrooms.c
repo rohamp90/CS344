@@ -226,9 +226,19 @@ int main ()
 
     //Assign roomArray names
     // Need to randomize as well
+    int usedRooms[7];
+    int count = 0;
+    int randNum = rand() % 10;
+    
     for(i = 0; i < 7; i++)
     {
-        roomArray[i].name = ROOM_NAMES[i];
+        randNum++;
+        if(randNum >= 9)
+        {
+            randNum = 0;
+        }
+        roomArray[i].name = ROOM_NAMES[randNum];
+
         // roomArray[i].numConnections = 2;        //test outbound connections
         // printf("Room %d: %s\n", i+1, roomArray[i].name);
         // printf("Room connections: %d\n", roomArray[i].numConnections);
