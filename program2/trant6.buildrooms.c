@@ -234,6 +234,19 @@ int main ()
         // printf("Room connections: %d\n", roomArray[i].numConnections);
     }
 
+    //Figure out which room will be start and end room
+    int randomStartRoomIndex = rand() % 7;
+    int randomEndRoomIndex = rand() % 7;
+
+    if (randomStartRoomIndex == randomEndRoomIndex)
+    {
+        randomEndRoomIndex = randomStartRoomIndex % 7;
+    }
+
+    roomArray[randomStartRoomIndex].type = 0;
+    roomArray[randomEndRoomIndex].type = 2;
+
+
     // Create all connections in graph
     while (IsGraphFull() == false)
     {
@@ -261,12 +274,31 @@ int main ()
             exit(EXIT_FAILURE);
         }
 
-        // char textForFile[50];
-        // strcpy(textForFile, roomArray[i].name);
-        // strcat(textForFile, roomArray[i].name);
-        // fputs("ROOM NAME\n", fPtr);
-        fprintf(fPtr, "ROOM NAME: %s\n", roomArray[i].name);
-        
+        fprintf(fPtr, "ROOM NAME: %s\n", roomArray[i].name);    //Append Room Name
+
+        for(j = 0; j < roomArray[i].numConnections; j++)    //Loop to add Room Connections
+        {
+            fprintf(fPtr, "Connection %d: %s\n", j, roomArray[i].connections[j]->name);
+        }
+
+        //Append Room Type to File Based on what Type of Room
+        if (roomArray[i].type == 0 )
+        {
+            fprintf(fPtr, "ROOM TYPE: %s\n", "START_ROOM");
+        }    
+        else if (roomArray[i].type == 1 )
+        {
+            fprintf(fPtr, "ROOM TYPE: %s\n", "MID_ROOM");
+        }
+        else if (roomArray[i].type == 2 )
+        {
+            fprintf(fPtr, "ROOM TYPE: %s\n", "END_ROOM");
+        }
+        else
+        {
+            fprintf(fPtr, "ROOM TYPE: ERROR\n");
+        }
+
     }
 
     //Testing
