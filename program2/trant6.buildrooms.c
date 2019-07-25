@@ -182,25 +182,46 @@ void AddRandomConnection()
 
 int main ()
 {
-    pid_t pid = getpid();
-
-    char command [50];
-    char stringPID [32];
-    sprintf(stringPID, "%d", pid);
-    strcpy(command, "mkdir trant6.rooms.");
-    strcat(command, stringPID);
-
-    // printf("%s\n", command); // Test Print
-    system(command);
-
-    //Initialize the roomArray with values 
     int i; 
     int j;
 
+    pid_t pid = getpid();   // get pid
+
+    char command [50];
+    char stringPID [32];
+    char baseFileName[50];
+    sprintf(stringPID, "%d", pid);  //turn pid into string
+    strcpy(baseFileName, "trant6.rooms."); 
+    strcpy(command, "mkdir trant6.rooms."); // copy mkdir command
+    strcat(command, stringPID); //concat command and stringPID
+    strcat(baseFileName, stringPID); //concat baseFileName and stringPID
+
+    printf("%s\n", command); // Test Print
+
+    //Commented out temporaroy
+    system(command);    //execute mkdir command on system
+
+
+    for (i=0; i < 7; i++)   //Create 7 files
+    {
+        char command2[50];
+        char num[2];
+        sprintf(num, "%d", i);  //turn i into string
+        strcpy(command2, "touch ");
+        strcat(command2, baseFileName); //concat command2 and trant6.rooms.
+        strcat(command2, "/room"); //concat command2 and room
+        strcat(command2, num); //concat command and number of for loop
+        // printf("Command2: %s\n", command2); // Test Print
+         //Commented out temporaroy
+        system(command2); //Generate the files inside directory
+    }
+    
+    //Initialize the roomArray with values 
     //Initalize 7 Rooms
     for(i=0; i < 7; i++)
     {
         roomArray[i].numConnections = 0; //initalize number of room connections to 0 1st
+        roomArray[i].type = 1;  //Initalize all room type to mid room
     }
 
     //Assign roomArray names
@@ -217,6 +238,35 @@ int main ()
     while (IsGraphFull() == false)
     {
         AddRandomConnection();
+    }
+
+    strcat(baseFileName, "/room"); //concat baseFileName and stringPID
+
+    FILE *fPtr;
+    //Write to file
+    for(i = 0; i < 7; i++)
+    {
+        char num[2];
+        char fileName[50];
+        strcpy(fileName, baseFileName);
+        sprintf(num, "%d", i);  //turn pid into string
+        strcat(fileName, num); //concat basefileName and number of for loop
+        fPtr = fopen(fileName, "a");
+
+        if (fPtr == NULL)   // source https://codeforwin.org/2018/02/c-program-append-data-file.html#logic
+        {
+            /* Unable to open file hence exit */
+            printf("\nUnable to open '%s' file.\n", fileName);
+            printf("Please check whether file exists and you have write privilege.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // char textForFile[50];
+        // strcpy(textForFile, roomArray[i].name);
+        // strcat(textForFile, roomArray[i].name);
+        // fputs("ROOM NAME\n", fPtr);
+        fprintf(fPtr, "ROOM NAME: %s\n", roomArray[i].name);
+        
     }
 
     //Testing
