@@ -196,7 +196,7 @@ int main ()
     strcat(command, stringPID); //concat command and stringPID
     strcat(baseFileName, stringPID); //concat baseFileName and stringPID
 
-    printf("%s\n", command); // Test Print
+    // printf("%s\n", command); // Test Print
 
     //Commented out temporaroy
     system(command);    //execute mkdir command on system
@@ -262,7 +262,7 @@ int main ()
         char num[2];
         char fileName[50];
         strcpy(fileName, baseFileName);
-        sprintf(num, "%d", i);  //turn pid into string
+        sprintf(num, "%d", i);  //turn i intger into string
         strcat(fileName, num); //concat basefileName and number of for loop
         fPtr = fopen(fileName, "a");
 
@@ -278,7 +278,7 @@ int main ()
 
         for(j = 0; j < roomArray[i].numConnections; j++)    //Loop to add Room Connections
         {
-            fprintf(fPtr, "Connection %d: %s\n", j, roomArray[i].connections[j]->name);
+            fprintf(fPtr, "CONNECTION %d: %s\n", j, roomArray[i].connections[j]->name);
         }
 
         //Append Room Type to File Based on what Type of Room
@@ -300,74 +300,6 @@ int main ()
         }
 
     }
-
-    //Testing
-    // for(i = 0; i < 7; i++)
-    // {
-    //     printf("Room %d: %s\n", i+1, roomArray[i].name);
-    //     printf("Room connections: %d\n", roomArray[i].numConnections);
-    // }
-
-    // //Testing Room Connections
-    // printf("Room 1: %s: Connections\n", roomArray[0].name);
-    // for(i = 0; i < roomArray[0].numConnections; i++)
-    // { 
-    //     printf("%s\n", roomArray[0].connections[i]->name);
-    // }
-
-    // printf("Room 2: %s: Connections\n", roomArray[1].name);
-    // for(i = 0; i < roomArray[1].numConnections; i++)
-    // { 
-    //     printf("%s\n", roomArray[1].connections[i]->name);
-    // }
-    
-    // //Test if Atherton and Belmont Connect
-    // if(ConnectionAlreadyExists(&roomArray[0], &roomArray[1]))
-    // {
-    //     printf("Rooms CONNECTED!\n");
-    // }
-    /*
-    // Testing ConnectRoom
-
-    printf("Connecting Room %s and Room %s\n", roomArray[0].name, roomArray[1].name);
-    ConnectRoom(&roomArray[0], &roomArray[1]);
-    ConnectRoom(&roomArray[1], &roomArray[0]);
-    for(i = 0; i < 7; i++)
-    {
-
-        printf("Room %d: %s\n", i+1, roomArray[i].name);
-        printf("Room connections: %d\n", roomArray[i].numConnections);
-    }
-     */
-
-
-    // if (ConnectionAlreadyExists(a, b))
-    //     printf("Connection already exists\n");
-
-
-
-
-
-
-    //Testing below
-
-    // struct Room randomRoom = GetRandomRoom();           //Testing GetRandomRoom Function
-    // printf("Get random room: %s\n", randomRoom.name);   //Testing CanAddConnectionFrom Function Print
-    // CanAddConnectionFrom(randomRoom);                   //Testing CanAddConnectionFrom Function
-
-
-    /* 
-    //Test isGraphFull
-
-    if (IsGraphFull())
-    {
-        printf("Graph Full\n");
-    }
-    else
-    {
-        printf("Graph Not FUll\n");
-    }
-    */
 
     return 0;
 }
