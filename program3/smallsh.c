@@ -14,7 +14,8 @@ void prompt();
 void exitCmd();		
 void cdCmd(char * word);
 void statusCmd(int status);
-void userInputAdv();
+
+
 
 void catchSIGINT(int signo)
 {
@@ -22,7 +23,8 @@ void catchSIGINT(int signo)
 	write(STDOUT_FILENO, message, 28);
 }
 
-
+//Commentting out the prompt function for now. going to work with the main function 1:30pm 8/8/19
+/*******************************************************************************
 void prompt()
 {
 //From userinput_adv.c; From lecture notes 3.3
@@ -88,6 +90,10 @@ void prompt()
 		{
 			statusCmd(childExitMethod);
 		}
+		else if(strcmp(str1, "#") == 0)		//If # is entered then nothing happens
+		{
+
+		}
 		else //User enters something else like a bash command
 		{
 			system(lineEntered);	//use the system() function
@@ -102,6 +108,8 @@ void prompt()
 		str1 = NULL;
 	}
 }
+
+ *******************************************************************************/
 
 /******************************************************************************
 	The exit command exits your shell. It takes no arguments. 
@@ -145,17 +153,7 @@ void cdCmd(char * word)
  *******************************************************************************/
 void statusCmd(int status)
 {
-	//Currently causing errors 
-	/************************************** 
-	// pid_t childPID = wait(&status);
-
-	// if (childPID == -1)
-	// {
-	// 	perror("wait failed");
-	// 	exit(1);
-	// }
-	***************************************/
-
+	//Currently having trouble getting to display correct status
 	if(WIFEXITED(status))	//taken from lecture 3.1
 	{
 		int exitStatus = WEXITSTATUS(status);         
@@ -164,30 +162,33 @@ void statusCmd(int status)
 	else
 	{
 		printf("terminated by signal %d\n", status);
-	}
+	}	
 }
 
-void userInputAdv()
-{
-//******************************************************************************
-//From userinput_adv.c; From lecture notes 3.3
+
+ int main()
+ {
+
+	//From userinput_adv.c; From lecture notes 3.3
     struct sigaction SIGINT_action = {0};
 	SIGINT_action.sa_handler = catchSIGINT;
 	sigfillset(&SIGINT_action.sa_mask);
 	//SIGINT_action.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &SIGINT_action, NULL);
 
-    int numCharsEntered = -5; // How many chars we entered
+	int numCharsEntered = -5; // How many chars we entered
 	int currChar = -5; // Tracks where we are when we print out every char
 	size_t bufferSize = 0; // Holds how large the allocated buffer is
 	char* lineEntered = NULL; // Points to a buffer allocated by getline() that holds our entered string + \n + \0
+
+	int exitStatus = 0;
 	
 	while(1)
 	{
 		// Get input from the user
 		while(1)	
 		{
-			printf("Enter in a line of text (CTRL-C to exit):");
+			printf(":");
 			numCharsEntered = getline(&lineEntered, &bufferSize, stdin); // Get a line from the user
 			if (numCharsEntered == -1)
 				clearerr(stdin);
@@ -195,24 +196,79 @@ void userInputAdv()
 				break; // Exit the loop - we've got input
 		}
 
-		printf("Allocated %zu bytes for the %d chars you entered.\n", bufferSize, numCharsEntered);
-		printf("Here is the raw entered line: \"%s\"\n", lineEntered);
 		lineEntered[strcspn(lineEntered, "\n")] = '\0'; // Remove the trailing \n that getline adds
-		printf("Here is the cleaned line: \"%s\"\n", lineEntered);
+
+		char* str1 = NULL;				//Will use to split up lineEntered string
+		str1 = strdup(lineEntered); 	//copy lineEntered to str1
+		char* token = strtok(str1, " ");	//split str1 into tokens delimiter is whitespace
+		
+
+		if(strcmp(lineEntered, "exit") == 0) //User Entered Exit into prompt
+		{
+			exitCmd();
+		}
+		else if(strcmp(str1, "cd") == 0)	//User Entered cd into prompt; Using str1 instead of lineEntered b/c we just want the first part of the argument
+		{
+			
+			if (strcmp(lineEntered, "cd") == 0)
+			{
+				chdir(getenv("HOME"));	//getenv gets the value of the "HOME" variable; changing current dir to home dir b/c there is no path after cd
+			}
+			else
+			{
+				token = strtok(NULL, "\0");	//move the token pointer to the next "token" whatever is after the "cd"
+				chdir(token);				//change the directory to whatever is after the cd
+			}
+
+		}
+		else if(strcmp(lineEntered, "status") == 0) // User Entered Status into prompt
+		{
+			statusCmd(exitStatus);
+		}
+		// else if(strcmp(str1, "#") == 0)		//If # is entered then nothing happens
+		else if((str1[0] == 35))	//ASCII value for # == 35
+		{
+			//Intentionally left blank
+		}
+		else //User enters something else like a bash command
+		{
+			// system(lineEntered);	//use the system() function
+
+			//From Lecture 3.4
+			pid_t spawnPid = -5;
+			int childExitStatus = -5;
+			spawnPid = fork();
+			switch (spawnPid)
+			{
+				case -1: {perror("Hull Breach!\n"); exit(1); break;}
+				case 0:
+				{
+					//using execlp
+					token = strtok(NULL, "\0");		//tokenized str1 and using token to get to the "arugments/parameters" of whatever command the user entered
+					execlp(str1, str1, token, NULL);
+					// execlp("ls", "ls", "-a", NULL);	//example from 3.4 lecture notes for "ls -a"
+					perror("CHILD: exec failure!\n");
+					exit(2);
+					break;
+				}
+				default:
+				{
+					pid_t actualPid = waitpid(spawnPid, &childExitStatus, 0);
+					break;
+				}
+			}
+			
+
+		}
         
         fflush( stdout ); //added fflush 
 
 		free(lineEntered); // Free the memory allocated by getline() or else memory leak
 		lineEntered = NULL;
+
+		free(str1);
+		str1 = NULL;
 	}
-//****************************************************
-//************* From userinput_adv.c; From lecture notes 3.3 ********************
-}
-
- int main()
- {
-
-    prompt();
 
      return 0;
  }
