@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h> 
 #include <signal.h>
 
 #define INPUTLENGTH 2048
@@ -12,7 +13,7 @@ void catchSIGINT(int signo);
 void prompt();
 void exitCmd();		
 void cdCmd(char * word);
-void statusCmd();
+void statusCmd(int status);
 void userInputAdv();
 
 void catchSIGINT(int signo)
@@ -78,7 +79,19 @@ void prompt()
 		}
 		else if(strcmp(lineEntered, "status") == 0) // User Entered Status into prompt
 		{
+			int status;
+			// pid_t childPID = wait(&status);
+			// if(WIFEXITED(status))	//taken from lecture 3.1
+			// {
+			// 	int exitStatus = WEXITSTATUS(status);         
+			// 	printf("exit value %d\n", exitStatus); 
+			// }
+			// else
+			// {
+			// 	printf("terminated by signal %d\n", status);
+			// }
 
+			statusCmd(status);
 		}
 		else //User enters something else like a bash command
 		{
@@ -135,9 +148,19 @@ void cdCmd(char * word)
 	return the exit status 0. These three built-in shell commands do not count as foreground processes for 
 	the purposes of this built-in command - i.e., status should ignore built-in commands.
  *******************************************************************************/
-void statusCmd()
+void statusCmd(int status)
 {
+	pid_t childPID = wait(&status);
 
+	if(WIFEXITED(status))	//taken from lecture 3.1
+	{
+		int exitStatus = WEXITSTATUS(status);         
+        printf("exit value %d\n", exitStatus); 
+	}
+	else
+	{
+		printf("terminated by signal %d\n", status);
+	}
 }
 
 void userInputAdv()
