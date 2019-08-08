@@ -36,6 +36,8 @@ void prompt()
 	int currChar = -5; // Tracks where we are when we print out every char
 	size_t bufferSize = 0; // Holds how large the allocated buffer is
 	char* lineEntered = NULL; // Points to a buffer allocated by getline() that holds our entered string + \n + \0
+
+	
 	
 	while(1)
 	{
@@ -58,6 +60,11 @@ void prompt()
 		
 	//******************************************************************************
 
+		//Taken from 3.1 lecture notes
+		int childExitMethod;
+		// pid_t childPID = wait(&childExitMethod);
+		//****************************************
+		
 
 		if(strcmp(lineEntered, "exit") == 0) //User Entered Exit into prompt
 		{
@@ -79,19 +86,7 @@ void prompt()
 		}
 		else if(strcmp(lineEntered, "status") == 0) // User Entered Status into prompt
 		{
-			int status;
-			// pid_t childPID = wait(&status);
-			// if(WIFEXITED(status))	//taken from lecture 3.1
-			// {
-			// 	int exitStatus = WEXITSTATUS(status);         
-			// 	printf("exit value %d\n", exitStatus); 
-			// }
-			// else
-			// {
-			// 	printf("terminated by signal %d\n", status);
-			// }
-
-			statusCmd(status);
+			statusCmd(childExitMethod);
 		}
 		else //User enters something else like a bash command
 		{
@@ -150,7 +145,16 @@ void cdCmd(char * word)
  *******************************************************************************/
 void statusCmd(int status)
 {
-	pid_t childPID = wait(&status);
+	//Currently causing errors 
+	/************************************** 
+	// pid_t childPID = wait(&status);
+
+	// if (childPID == -1)
+	// {
+	// 	perror("wait failed");
+	// 	exit(1);
+	// }
+	***************************************/
 
 	if(WIFEXITED(status))	//taken from lecture 3.1
 	{
