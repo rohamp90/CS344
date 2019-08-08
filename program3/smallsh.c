@@ -11,7 +11,8 @@
 void catchSIGINT(int signo);
 void prompt();
 void exitCmd();		
-void cdCmd();
+void cdCmd(char * word);
+void statusCmd();
 void userInputAdv();
 
 void catchSIGINT(int signo)
@@ -48,11 +49,12 @@ void prompt()
 				break; // Exit the loop - we've got input
 		}
 
-	//Lines commented out below are from userinput_adv.c
-		// printf("Allocated %zu bytes for the %d chars you entered.\n", bufferSize, numCharsEntered);
-		// printf("Here is the raw entered line: \"%s\"\n", lineEntered);
 		lineEntered[strcspn(lineEntered, "\n")] = '\0'; // Remove the trailing \n that getline adds
-		// printf("Here is the cleaned line: \"%s\"\n", lineEntered);
+
+		char* str1 = NULL;
+		str1 = strdup(lineEntered); 	//copy lineEntered to str1
+		char* token = strtok(str1, " ");	//split str1 into tokens delimiter is whitespace
+		
 	//******************************************************************************
 
 
@@ -60,15 +62,36 @@ void prompt()
 		{
 			exitCmd();
 		}
-		else if(strcmp(lineEntered, "cd") == 0)	//User Entered cd into prompt
+		else if(strcmp(str1, "cd") == 0)	//User Entered cd into prompt; Using str1 instead of lineEntered b/c we just want the first part of the argument
 		{
-			cdCmd();
+			
+			if (strcmp(lineEntered, "cd") == 0)
+			{
+				chdir(getenv("HOME"));	//getenv gets the value of the "HOME" variable; changing current dir to home dir b/c there is no path after cd
+			}
+			else
+			{
+				token = strtok(NULL, "\0");	//move the token pointer to the next "token" whatever is after the "cd"
+				chdir(token);				//change the directory to whatever is after the cd
+			}
+
+		}
+		else if(strcmp(lineEntered, "status") == 0) // User Entered Status into prompt
+		{
+
+		}
+		else //User enters something else like a bash command
+		{
+			system(lineEntered);	//use the system() function
 		}
         
         fflush( stdout ); //added fflush 
 
 		free(lineEntered); // Free the memory allocated by getline() or else memory leak
 		lineEntered = NULL;
+
+		free(str1);
+		str1 = NULL;
 	}
 }
 
@@ -99,9 +122,22 @@ void exitCmd()
 		Your shell's working directory begins in whatever directory your shell's 
 		executible was launched from.
  *******************************************************************************/
-void cdCmd()
+void cdCmd(char * word)
 {
-	printf("Entered into cdCmd Function\n");
+	//might not need this function
+	//put logic inside if/else statment in prompt function
+}
+
+/******************************************************************************
+	The status command prints out either the exit status or the terminating signal 
+	of the last foreground process (not both, processes killed by signals do not have exit statuses!) 
+	ran by your shell. If this command is run before any foreground command is run, then it should simply 
+	return the exit status 0. These three built-in shell commands do not count as foreground processes for 
+	the purposes of this built-in command - i.e., status should ignore built-in commands.
+ *******************************************************************************/
+void statusCmd()
+{
+
 }
 
 void userInputAdv()
@@ -150,7 +186,6 @@ void userInputAdv()
  {
 
     prompt();
-
 
      return 0;
  }
