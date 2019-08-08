@@ -11,6 +11,7 @@
 void catchSIGINT(int signo);
 void prompt();
 void exitCmd();		
+void cdCmd();
 void userInputAdv();
 
 void catchSIGINT(int signo)
@@ -47,14 +48,21 @@ void prompt()
 				break; // Exit the loop - we've got input
 		}
 
+	//Lines commented out below are from userinput_adv.c
 		// printf("Allocated %zu bytes for the %d chars you entered.\n", bufferSize, numCharsEntered);
 		// printf("Here is the raw entered line: \"%s\"\n", lineEntered);
 		lineEntered[strcspn(lineEntered, "\n")] = '\0'; // Remove the trailing \n that getline adds
 		// printf("Here is the cleaned line: \"%s\"\n", lineEntered);
+	//******************************************************************************
+
 
 		if(strcmp(lineEntered, "exit") == 0) //User Entered Exit into prompt
 		{
 			exitCmd();
+		}
+		else if(strcmp(lineEntered, "cd") == 0)	//User Entered cd into prompt
+		{
+			cdCmd();
 		}
         
         fflush( stdout ); //added fflush 
@@ -69,9 +77,31 @@ void prompt()
 	When this command is run, your shell must kill any other processes or jobs 
 	that your shell has started before it terminates itself.
  *******************************************************************************/
+
+// 8/7/19 4:30pm - only for 1 process as of now
 void exitCmd()
 {
-	printf("Entered the Exit Function\n");
+	int pid = getpid(); 	//get pid of processess
+
+	kill(pid, SIGTERM);		//use kill and SIGTERM to terminate process
+}
+
+/******************************************************************************
+	The cd command changes the working directory of your shell. 
+	By itself - with no arguments - it changes to the directory specified in the HOME environment variable 
+		(not to the location where smallsh was executed from, 
+		unless your shell executable is located in the HOME directory, 
+		in which case these are the same). This command can also take one argument: 
+		the path of a directory to change to. Your cd command should support both 
+		absolute and relative paths. When smallsh terminates, 
+		the original shell it was launched from will still be in its 
+		original working directory, despite your use of chdir() in smallsh. 
+		Your shell's working directory begins in whatever directory your shell's 
+		executible was launched from.
+ *******************************************************************************/
+void cdCmd()
+{
+	printf("Entered into cdCmd Function\n");
 }
 
 void userInputAdv()
