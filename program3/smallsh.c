@@ -25,10 +25,10 @@ void catchSIGINT(int signo)
 }
 
 //Commentting out the prompt function for now. going to work with the main function 1:30pm 8/8/19
-/*******************************************************************************
+
 void prompt()
 {
-//From userinput_adv.c; From lecture notes 3.3
+	//From userinput_adv.c; From lecture notes 3.3
     struct sigaction SIGINT_action = {0};
 	SIGINT_action.sa_handler = catchSIGINT;
 	sigfillset(&SIGINT_action.sa_mask);
@@ -40,7 +40,7 @@ void prompt()
 	size_t bufferSize = 0; // Holds how large the allocated buffer is
 	char* lineEntered = NULL; // Points to a buffer allocated by getline() that holds our entered string + \n + \0
 
-	
+	int exitStatus = 0;
 	
 	while(1)
 	{
@@ -57,16 +57,9 @@ void prompt()
 
 		lineEntered[strcspn(lineEntered, "\n")] = '\0'; // Remove the trailing \n that getline adds
 
-		char* str1 = NULL;
+		char* str1 = NULL;				//Will use to split up lineEntered string
 		str1 = strdup(lineEntered); 	//copy lineEntered to str1
-		char* token = strtok(str1, " ");	//split str1 into tokens delimiter is whitespace
-		
-	//******************************************************************************
-
-		//Taken from 3.1 lecture notes
-		int childExitMethod;
-		// pid_t childPID = wait(&childExitMethod);
-		//****************************************
+		char* token1 = strtok(str1, " ");	//split str1 into tokens delimiter is whitespace
 		
 
 		if(strcmp(lineEntered, "exit") == 0) //User Entered Exit into prompt
@@ -82,22 +75,133 @@ void prompt()
 			}
 			else
 			{
-				token = strtok(NULL, "\0");	//move the token pointer to the next "token" whatever is after the "cd"
-				chdir(token);				//change the directory to whatever is after the cd
+				token1 = strtok(NULL, "\0");	//move the token pointer to the next "token" whatever is after the "cd"
+				chdir(token1);				//change the directory to whatever is after the cd
 			}
 
 		}
 		else if(strcmp(lineEntered, "status") == 0) // User Entered Status into prompt
 		{
-			statusCmd(childExitMethod);
+			statusCmd(exitStatus);
 		}
-		else if(strcmp(str1, "#") == 0)		//If # is entered then nothing happens
+									//If # is entered then nothing happens
+		else if((str1[0] == 35))	//ASCII value for # == 35 
 		{
-
+			//Intentionally left blank
 		}
 		else //User enters something else like a bash command
 		{
-			system(lineEntered);	//use the system() function
+			// system(lineEntered);	//use the system() function
+
+			//From Lecture 3.4
+			pid_t spawnPid = -5;
+			int childExitStatus = -5;
+			spawnPid = fork();
+			switch (spawnPid)
+			{
+				case -1: {perror("Hull Breach!\n"); exit(1); break;}
+				case 0:
+				{
+					// printf("lineEntered: %s\nlineEntered length: %d\n", lineEntered, strlen(lineEntered));	//test print
+			
+					token1 = strtok(NULL, "\0");		//tokenized str1 and using token to get to the "arugments/parameters" of whatever command the user entered
+
+					if(token1 != NULL)					//Checking if there is more than 1 argument
+					{
+						char* str2 = NULL;					//Will use to split up lineEntered string to get arguments
+						str2 = strdup(token1); 				//copy token1 to str2
+						char* token2 = strtok(str2, " ");	//split str2 into tokens delimiter is whitespace
+
+						token2 = strtok(NULL, "\0");		//tokenized str2 and using token to get to the "arugments/parameters" of whatever command the user entered
+															//str2 be whatever comes after a whitespace like "<" or ">"; 
+						// printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
+						//Checking for redirection 
+						if (strcmp(str2, ">") == 0)
+						{	
+						
+							printf("I know this is a >\n");		//test print
+							
+							// /* ***************************************
+							char* str3 = NULL;					//Will use to split up lineEntered string to get arguments
+							str3 = strdup(token2); 				//copy token2 to str3
+							char* token3 = strtok(str3, " ");	//split str3 into tokens delimiter is whitespace
+							token3 = strtok(NULL, "\0");		//tokenized str3 and using token to get to the "arugments/parameters" of whatever command the user entered
+																//str3 be whatever comes after a "<" or ">"; 
+							printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
+							printf("\nstr3: %s\nstr3 length: %d\n", str3, strlen(str3));	//test print
+							
+							//Taken from 3.4 lecture notes
+							int sourceFD, targetFD, result;
+							
+							sourceFD = open(str1, O_RDONLY);
+							if (sourceFD == -1) {perror("source open()"); exit(1);}
+							printf("sourceFD == %d\n", sourceFD); // Written to terminal
+							targetFD = open(str3, O_WRONLY | O_CREAT | O_TRUNC, 0644); 
+							if (targetFD == -1) { perror("target open()"); exit(1); } 
+							printf("targetFD == %d\n", targetFD); // Written to terminal
+
+							result = dup2(sourceFD, 0); 
+							if (result == -1) { perror("source dup2()"); exit(2); } 
+							result = dup2(targetFD, 1); 
+							if (result == -1) { perror("target dup2()"); exit(2); }
+							//  *************************************** */
+
+							
+							exit(2);
+						}
+						else if (strcmp(str2, "<") == 0)
+						{
+							printf("I know this is a <\n");
+							exitStatus = 11;
+							exit(11);
+							// printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
+						}
+						else
+						{
+							//using execlp
+							execlp(str1, str1, token1, NULL);	//execlp("ls", "ls", "-a", NULL); example from 3.4 lecture notes for "ls -a"
+
+						}
+							perror("CHILD: exec failure!\n");
+							exit(2);
+							break;
+					}
+					else
+					{
+						execlp(str1, str1, token1, NULL);	//uncomment after done so exec command works
+						perror("CHILD: exec failure!\n");
+						exit(2);
+						break;
+					}
+					
+					//Taken from 3.4 lecture notes
+				// *******************************************************************
+					// int sourceFD, targetFD, result;
+
+					// sourceFD = open(stdin, O_RDONLY);
+					// if (sourceFD == -1) {perror("source open()"); exit(1);}
+
+					// printf("sourceFD == %d\n", sourceFD); // Written to terminal
+
+					// targetFD = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644); 
+					// if (targetFD == -1) { perror("target open()"); exit(1); } 
+					// printf("targetFD == %d\n", targetFD); // Written to terminal
+
+					// result = dup2(sourceFD, 0); 
+					// if (result == -1) { perror("source dup2()"); exit(2); } 
+					// result = dup2(targetFD, 1); 
+					// if (result == -1) { perror("target dup2()"); exit(2); }
+				// *******************************************************************
+
+
+				}
+				default:
+				{
+					pid_t actualPid = waitpid(spawnPid, &childExitStatus, 0);
+					break;
+				}
+			}
+
 		}
         
         fflush( stdout ); //added fflush 
@@ -109,8 +213,6 @@ void prompt()
 		str1 = NULL;
 	}
 }
-
- *******************************************************************************/
 
 /******************************************************************************
 	The exit command exits your shell. It takes no arguments. 
@@ -233,8 +335,44 @@ void statusCmd(int status)
 		}
 		else //User enters something else like a bash command
 		{
-			// system(lineEntered);	//use the system() function
+			/*
+			// //Trying pipe lecture 3.4
+			// int r, pipeFDs[2]; 
+			// char completeMessage[512], readBuffer[10]; 
+			// pid_t spawnpid;
 
+			// if (pipe(pipeFDs) == -1) { perror("Hull Breach!"); exit(1); } // Create the pipe with error check
+
+			// spawnpid = fork(); // Fork the child, which will write into the pipe 
+			
+			// switch (spawnpid) 
+			// { 
+			// 	case 0: // Child
+			// 		close(pipeFDs[0]); // close the input file descriptor
+			// 		write(pipeFDs[1], "CHILD: Hi parent!@@", 19); // Write the entire string into the pipe
+			// 		exit(0); break; // Terminate the child 
+				
+			// 	default: // Parent
+			// 		close(pipeFDs[1]); // close output file descriptor
+			// 		memset(completeMessage, '\0', sizeof(completeMessage)); // Clear the buffer
+			// 		while (strstr(completeMessage, "@@") == NULL) // As long as we haven't found the terminal... 
+			// 		{
+			// 			memset(readBuffer, '\0', sizeof(readBuffer)); // Clear the buffer
+			// 			r = read(pipeFDs[0], readBuffer, sizeof(readBuffer) - 1); // Get the next chunk
+			// 			strcat(completeMessage, readBuffer); // Add that chunk to what we have so far
+			// 			printf("PARENT: Message received from child: \"%s\", total: \"%s\"\n", readBuffer, completeMessage);
+			// 			if (r == -1) { printf("r == -1\n"); break; } // Check for errors
+			// 			if (r == 0) { printf("r == 0\n"); break; } 
+			// 		} 
+			// 		int terminalLocation = strstr(completeMessage, "@@") - completeMessage; // Where is the terminal 
+			// 		completeMessage[terminalLocation] = '\0'; // End the string early to wipe out the terminal 
+			// 		printf("PARENT: Complete string: \"%s\"\n", completeMessage); 
+			// 		break;
+			// }
+			 */
+
+		// Trying out the dup2 
+		
 			//From Lecture 3.4
 			pid_t spawnPid = -5;
 			int childExitStatus = -5;
@@ -260,46 +398,67 @@ void statusCmd(int status)
 						//Checking for redirection 
 						if (strcmp(str2, ">") == 0)
 						{	
-							system(lineEntered);
-							/* ***************************************
 							char* str3 = NULL;					//Will use to split up lineEntered string to get arguments
 							str3 = strdup(token2); 				//copy token2 to str3
 							char* token3 = strtok(str3, " ");	//split str3 into tokens delimiter is whitespace
 							token3 = strtok(NULL, "\0");		//tokenized str3 and using token to get to the "arugments/parameters" of whatever command the user entered
 																//str3 be whatever comes after a "<" or ">"; 
+							// printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
 							// printf("\nstr3: %s\nstr3 length: %d\n", str3, strlen(str3));	//test print
 							
 							//Taken from 3.4 lecture notes
-							printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
 							int sourceFD, targetFD, result;
-							sourceFD = open(str1, O_RDONLY);
-							if (sourceFD == -1) {perror("source open()"); exit(1);}
-							printf("sourceFD == %d\n", sourceFD); // Written to terminal
-							targetFD = open(str3, O_WRONLY | O_CREAT | O_TRUNC, 0644); 
+							char * inputFile = NULL;
+							char * outputFile = NULL;
+							inputFile = strdup(str1);
+							outputFile = strdup(str3);
+							fflush( stdout );
+							// sourceFD = open(stdin, O_RDONLY);
+							// if (sourceFD == -1) {perror("source open()"); exit(1);}
+							// printf("sourceFD == %d\n", sourceFD); // Written to terminal
+							targetFD = open(outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0644); 
 							if (targetFD == -1) { perror("target open()"); exit(1); } 
-							printf("targetFD == %d\n", targetFD); // Written to terminal
+							// printf("targetFD == %d\n", targetFD); // Written to terminal
 
 							result = dup2(sourceFD, 0); 
 							if (result == -1) { perror("source dup2()"); exit(2); } 
 							result = dup2(targetFD, 1); 
 							if (result == -1) { perror("target dup2()"); exit(2); }
-							 *************************************** */
+							execlp(str1, str1, NULL);
+							exit(2);
 						}
 						else if (strcmp(str2, "<") == 0)
 						{
-							system(lineEntered);
-							// printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
+							char* str3 = NULL;					//Will use to split up lineEntered string to get arguments
+							str3 = strdup(token2); 				//copy token2 to str3
+							char* token3 = strtok(str3, " ");	//split str3 into tokens delimiter is whitespace
+							token3 = strtok(NULL, "\0");		//tokenized str3 and using token to get to the "arugments/parameters" of whatever command the user entered
+																//str3 be whatever comes after a "<" or ">"; 
+							int sourceFD, targetFD, result;
+							char * inputFile = NULL;
+							char * outputFile = NULL;
+							inputFile = strdup(str3);
+							outputFile = strdup(str1);
+							fflush( stdout );
+							sourceFD = open(inputFile, O_RDONLY);
+							if (sourceFD == -1) {perror("source open()"); exit(1);}
+							printf("sourceFD == %d\n", sourceFD); // Written to terminal
+
+							result = dup2(sourceFD, 0); 
+							if (result == -1) { perror("source dup2()"); exit(2); } 
+							result = dup2(targetFD, 1); 
+							if (result == -1) { perror("target dup2()"); exit(2); }
+							execlp(str1, str1, token1, str3, NULL);
+
 						}
 						else
 						{
 							//using execlp
-							execlp(str1, str1, token1, NULL);	//uncomment after done so exec command works
-							// execlp("ls", "ls", "-a", NULL);	//example from 3.4 lecture notes for "ls -a"
+							execlp(str1, str1, token1, NULL);	//execlp("ls", "ls", "-a", NULL); example from 3.4 lecture notes for "ls -a"
+						}
 							perror("CHILD: exec failure!\n");
 							exit(2);
 							break;
-						}
-						
 					}
 					else
 					{
@@ -308,35 +467,13 @@ void statusCmd(int status)
 						exit(2);
 						break;
 					}
-					
-					//Taken from 3.4 lecture notes
-				// *******************************************************************
-					// int sourceFD, targetFD, result;
-
-					// sourceFD = open(stdin, O_RDONLY);
-					// if (sourceFD == -1) {perror("source open()"); exit(1);}
-
-					// printf("sourceFD == %d\n", sourceFD); // Written to terminal
-
-					// targetFD = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644); 
-					// if (targetFD == -1) { perror("target open()"); exit(1); } 
-					// printf("targetFD == %d\n", targetFD); // Written to terminal
-
-					// result = dup2(sourceFD, 0); 
-					// if (result == -1) { perror("source dup2()"); exit(2); } 
-					// result = dup2(targetFD, 1); 
-					// if (result == -1) { perror("target dup2()"); exit(2); }
-				// *******************************************************************
-
-
 				}
 				default:
 				{
 					pid_t actualPid = waitpid(spawnPid, &childExitStatus, 0);
 					break;
 				}
-			}
-
+			} 
 		}
         
         fflush( stdout ); //added fflush 
