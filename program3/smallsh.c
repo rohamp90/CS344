@@ -28,190 +28,7 @@ void catchSIGINT(int signo)
 
 void prompt()
 {
-	//From userinput_adv.c; From lecture notes 3.3
-    struct sigaction SIGINT_action = {0};
-	SIGINT_action.sa_handler = catchSIGINT;
-	sigfillset(&SIGINT_action.sa_mask);
-	//SIGINT_action.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &SIGINT_action, NULL);
-
-	int numCharsEntered = -5; // How many chars we entered
-	int currChar = -5; // Tracks where we are when we print out every char
-	size_t bufferSize = 0; // Holds how large the allocated buffer is
-	char* lineEntered = NULL; // Points to a buffer allocated by getline() that holds our entered string + \n + \0
-
-	int exitStatus = 0;
 	
-	while(1)
-	{
-		// Get input from the user
-		while(1)	
-		{
-			printf(":");
-			numCharsEntered = getline(&lineEntered, &bufferSize, stdin); // Get a line from the user
-			if (numCharsEntered == -1)
-				clearerr(stdin);
-			else
-				break; // Exit the loop - we've got input
-		}
-
-		lineEntered[strcspn(lineEntered, "\n")] = '\0'; // Remove the trailing \n that getline adds
-
-		char* str1 = NULL;				//Will use to split up lineEntered string
-		str1 = strdup(lineEntered); 	//copy lineEntered to str1
-		char* token1 = strtok(str1, " ");	//split str1 into tokens delimiter is whitespace
-		
-
-		if(strcmp(lineEntered, "exit") == 0) //User Entered Exit into prompt
-		{
-			exitCmd();
-		}
-		else if(strcmp(str1, "cd") == 0)	//User Entered cd into prompt; Using str1 instead of lineEntered b/c we just want the first part of the argument
-		{
-			
-			if (strcmp(lineEntered, "cd") == 0)
-			{
-				chdir(getenv("HOME"));	//getenv gets the value of the "HOME" variable; changing current dir to home dir b/c there is no path after cd
-			}
-			else
-			{
-				token1 = strtok(NULL, "\0");	//move the token pointer to the next "token" whatever is after the "cd"
-				chdir(token1);				//change the directory to whatever is after the cd
-			}
-
-		}
-		else if(strcmp(lineEntered, "status") == 0) // User Entered Status into prompt
-		{
-			statusCmd(exitStatus);
-		}
-									//If # is entered then nothing happens
-		else if((str1[0] == 35))	//ASCII value for # == 35 
-		{
-			//Intentionally left blank
-		}
-		else //User enters something else like a bash command
-		{
-			// system(lineEntered);	//use the system() function
-
-			//From Lecture 3.4
-			pid_t spawnPid = -5;
-			int childExitStatus = -5;
-			spawnPid = fork();
-			switch (spawnPid)
-			{
-				case -1: {perror("Hull Breach!\n"); exit(1); break;}
-				case 0:
-				{
-					// printf("lineEntered: %s\nlineEntered length: %d\n", lineEntered, strlen(lineEntered));	//test print
-			
-					token1 = strtok(NULL, "\0");		//tokenized str1 and using token to get to the "arugments/parameters" of whatever command the user entered
-
-					if(token1 != NULL)					//Checking if there is more than 1 argument
-					{
-						char* str2 = NULL;					//Will use to split up lineEntered string to get arguments
-						str2 = strdup(token1); 				//copy token1 to str2
-						char* token2 = strtok(str2, " ");	//split str2 into tokens delimiter is whitespace
-
-						token2 = strtok(NULL, "\0");		//tokenized str2 and using token to get to the "arugments/parameters" of whatever command the user entered
-															//str2 be whatever comes after a whitespace like "<" or ">"; 
-						// printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
-						//Checking for redirection 
-						if (strcmp(str2, ">") == 0)
-						{	
-						
-							printf("I know this is a >\n");		//test print
-							
-							// /* ***************************************
-							char* str3 = NULL;					//Will use to split up lineEntered string to get arguments
-							str3 = strdup(token2); 				//copy token2 to str3
-							char* token3 = strtok(str3, " ");	//split str3 into tokens delimiter is whitespace
-							token3 = strtok(NULL, "\0");		//tokenized str3 and using token to get to the "arugments/parameters" of whatever command the user entered
-																//str3 be whatever comes after a "<" or ">"; 
-							printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
-							printf("\nstr3: %s\nstr3 length: %d\n", str3, strlen(str3));	//test print
-							
-							//Taken from 3.4 lecture notes
-							int sourceFD, targetFD, result;
-							
-							sourceFD = open(str1, O_RDONLY);
-							if (sourceFD == -1) {perror("source open()"); exit(1);}
-							printf("sourceFD == %d\n", sourceFD); // Written to terminal
-							targetFD = open(str3, O_WRONLY | O_CREAT | O_TRUNC, 0644); 
-							if (targetFD == -1) { perror("target open()"); exit(1); } 
-							printf("targetFD == %d\n", targetFD); // Written to terminal
-
-							result = dup2(sourceFD, 0); 
-							if (result == -1) { perror("source dup2()"); exit(2); } 
-							result = dup2(targetFD, 1); 
-							if (result == -1) { perror("target dup2()"); exit(2); }
-							//  *************************************** */
-
-							
-							exit(2);
-						}
-						else if (strcmp(str2, "<") == 0)
-						{
-							printf("I know this is a <\n");
-							exitStatus = 11;
-							exit(11);
-							// printf("\nstr2: %s\nstr2 length: %d\n", str2, strlen(str2));	//test print
-						}
-						else
-						{
-							//using execlp
-							execlp(str1, str1, token1, NULL);	//execlp("ls", "ls", "-a", NULL); example from 3.4 lecture notes for "ls -a"
-
-						}
-							perror("CHILD: exec failure!\n");
-							exit(2);
-							break;
-					}
-					else
-					{
-						execlp(str1, str1, token1, NULL);	//uncomment after done so exec command works
-						perror("CHILD: exec failure!\n");
-						exit(2);
-						break;
-					}
-					
-					//Taken from 3.4 lecture notes
-				// *******************************************************************
-					// int sourceFD, targetFD, result;
-
-					// sourceFD = open(stdin, O_RDONLY);
-					// if (sourceFD == -1) {perror("source open()"); exit(1);}
-
-					// printf("sourceFD == %d\n", sourceFD); // Written to terminal
-
-					// targetFD = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644); 
-					// if (targetFD == -1) { perror("target open()"); exit(1); } 
-					// printf("targetFD == %d\n", targetFD); // Written to terminal
-
-					// result = dup2(sourceFD, 0); 
-					// if (result == -1) { perror("source dup2()"); exit(2); } 
-					// result = dup2(targetFD, 1); 
-					// if (result == -1) { perror("target dup2()"); exit(2); }
-				// *******************************************************************
-
-
-				}
-				default:
-				{
-					pid_t actualPid = waitpid(spawnPid, &childExitStatus, 0);
-					break;
-				}
-			}
-
-		}
-        
-        fflush( stdout ); //added fflush 
-
-		free(lineEntered); // Free the memory allocated by getline() or else memory leak
-		lineEntered = NULL;
-
-		free(str1);
-		str1 = NULL;
-	}
 }
 
 /******************************************************************************
@@ -271,11 +88,24 @@ void statusCmd(int status)
  int main()
  {
 	//From userinput_adv.c; From lecture notes 3.3
-    struct sigaction SIGINT_action = {0};
-	SIGINT_action.sa_handler = catchSIGINT;
+
+	//Initialize struct to be empty
+    struct sigaction SIGINT_action = {0}; 
+
+	//Initalize member variables
+	void (*fpStatusCmd)(int) = statusCmd; 	//function pointer to statusCmd(int signal)
+	SIGINT_action.sa_handler = fpStatusCmd;
+	// SIGINT_action.sa_handler = catchSIGINT;
 	sigfillset(&SIGINT_action.sa_mask);
+	SIGINT_action.sa_flags = 0;
+
+	signal(SIGINT, fpStatusCmd);
+	
 	// SIGINT_action.sa_flags = SA_RESTART;
+	
 	sigaction(SIGINT, &SIGINT_action, NULL);
+
+	// signal(SIGINT, statusCmd);
 
 	int numCharsEntered = -5; // How many chars we entered
 	int currChar = -5; // Tracks where we are when we print out every char
@@ -396,7 +226,6 @@ void statusCmd(int status)
 							{
 								execlp(str1, str1, NULL);
 							}
-
 							
 							free(str3);
 							str3 = NULL;
